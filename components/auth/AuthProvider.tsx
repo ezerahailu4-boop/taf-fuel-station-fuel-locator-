@@ -14,6 +14,7 @@ interface AuthContextValue {
   state: AuthState;
   /** Authenticated fetch (Bearer token in Telegram, cookie on the web). */
   api: <T>(path: string, opts?: Omit<ApiOptions, "token">) => Promise<T>;
+  loginWithPassword: (password: string) => Promise<void>;
   loginWithCode: (telegramId: string, code: string) => Promise<void>;
   requestCode: (telegramId: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -70,6 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await apiFetch("/api/auth/otp/request", { method: "POST", body: { telegramId } });
   }, []);
 
+  const loginWithPassword = useCallback(async (password: string) => {
+    const res = await apiFetch<{ user: PublicUser }>("/api/auth/password", {
+      method: "POST",
+      body: { password },
+    });
+    setState({ status: "authenticated", user: res.user });
+  }, []);
+
   const loginWithCode = useCallback(async (telegramId: string, code: string) => {
     const res = await apiFetch<{ user: PublicUser }>("/api/auth/otp/verify", { method: "POST", body: { telegramId, code } });
     setState({ status: "authenticated", user: res.user });
@@ -81,6 +90,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState({ status: "anonymous", inTelegram: false });
   }, []);
 
-  const value = useMemo(() => ({ state, api, loginWithCode, requestCode, logout }), [state, api, loginWithCode, requestCode, logout]);
+  const value = useMemo(
+    () => ({ state, api, loginWithPassword, loginWithCode, requestCode, logout }),
+    [state, api, loginWithPassword, loginWithCode, requestCode, logout]
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
