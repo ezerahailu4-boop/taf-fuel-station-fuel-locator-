@@ -8,11 +8,12 @@ import { BranchDashboard } from "./BranchDashboard";
 const DEFAULT_STAFF_USER: PublicUser = {
   id: "c0000000-0000-0000-0000-000000000001",
   telegramUserId: "2074368152",
+  firstName: "Branch",
+  lastName: "Staff",
+  username: "taf_staff",
+  preferredLocale: "en",
   role: "SUPER_ADMIN",
   stationId: "b0000000-0000-0000-0000-000000000001",
-  stationName: "Tolroad TAF Station",
-  isActive: true,
-  language: "en",
 };
 
 /**
