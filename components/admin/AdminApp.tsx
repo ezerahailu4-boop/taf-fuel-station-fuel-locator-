@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Image from "next/image";
 import { AdminDashboard } from "./AdminDashboard";
 
 export function AdminApp() {
@@ -22,8 +23,30 @@ export function AdminApp() {
 
   if (state.status === "anonymous") {
     return (
-      <main className="flex min-h-dvh items-center justify-center p-4">
-        <LoginForm />
+      <main
+        className="relative flex min-h-dvh items-center justify-center p-4 overflow-hidden"
+        style={{ background: "var(--bg)" }}
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[700px] rounded-full bg-gradient-to-br from-amber-500/15 via-orange-500/5 to-transparent blur-3xl z-0"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 flex items-center justify-center select-none overflow-hidden z-0"
+        >
+          <Image
+            src="/brand/taf-logo.webp"
+            alt=""
+            width={640}
+            height={640}
+            priority
+            className="opacity-[0.06] dark:opacity-[0.04] scale-110 filter blur-[0.5px] object-contain"
+          />
+        </div>
+        <div className="relative z-10 w-full max-w-sm">
+          <LoginForm />
+        </div>
       </main>
     );
   }

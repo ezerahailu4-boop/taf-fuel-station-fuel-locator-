@@ -147,12 +147,14 @@ export const GET = handle(async (req) => {
             telegramUserId: s.admins[0].user.telegramUserId.toString(),
           }
         : null,
-      fuels: s.fuelStatuses.map((f) => ({
-        slug: f.fuelType.slug,
-        nameEn: f.fuelType.nameEn,
-        icon: f.fuelType.icon,
-        status: f.status,
-      })),
+      fuels: s.fuelStatuses
+        .filter((f) => Boolean(f?.fuelType))
+        .map((f) => ({
+          slug: f.fuelType.slug,
+          nameEn: f.fuelType.nameEn,
+          icon: f.fuelType.icon,
+          status: f.status,
+        })),
     })),
   });
 });

@@ -35,9 +35,11 @@ export interface StationItem {
 
 export function StationsManager({
   stations,
+  loading = false,
   onRefresh,
 }: {
   stations: StationItem[];
+  loading?: boolean;
   onRefresh: () => void;
 }) {
   const [search, setSearch] = useState("");
@@ -255,10 +257,19 @@ export function StationsManager({
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
-              {filtered.length === 0 ? (
+              {loading && stations.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-12 text-center text-xs text-neutral-400">
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                      <span>Loading station network…</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-12 text-center text-neutral-500 text-xs">
-                    No stations match your search query.
+                    {search ? "No stations match your search query." : "No stations found in the database. Click '+ Add Station' to create one."}
                   </td>
                 </tr>
               ) : (

@@ -81,20 +81,37 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   const [fuelTypes, setFuelTypes] = useState<FuelTypeItem[]>([]);
   const [settings, setSettings] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchOverview = useCallback(async () => {
     try {
       setLoading(true);
-      const [overviewData, fuelTypesData, settingsData] = await Promise.all([
+      setFetchError(null);
+      const [overviewRes, fuelTypesRes, settingsRes] = await Promise.allSettled([
         apiFetch<OverviewData>("/api/admin/overview"),
-        apiFetch<FuelTypeItem[]>("/api/fuel-types?all=1"),
-        apiFetch<{ settings: Record<string, unknown> }>("/api/admin/settings").catch(() => ({ settings: {} })),
+        apiFetch<{ items?: FuelTypeItem[] } | FuelTypeItem[]>("/api/fuel-types?all=1"),
+        apiFetch<{ settings: Record<string, unknown> }>("/api/admin/settings"),
       ]);
-      setData(overviewData);
-      setFuelTypes(fuelTypesData);
-      setSettings(settingsData.settings);
+
+      if (overviewRes.status === "fulfilled") {
+        setData(overviewRes.value);
+      } else {
+        console.error("[admin-dashboard] Error loading overview:", overviewRes.reason);
+        setFetchError("Unable to load overview metrics. Please retry or check your admin access.");
+      }
+
+      if (fuelTypesRes.status === "fulfilled") {
+        const val = fuelTypesRes.value;
+        const items = Array.isArray(val) ? val : Array.isArray(val?.items) ? val.items : [];
+        setFuelTypes(items);
+      }
+
+      if (settingsRes.status === "fulfilled") {
+        setSettings(settingsRes.value?.settings ?? {});
+      }
     } catch (err) {
-      console.error("[admin-dashboard] Error loading:", err);
+      console.error("[admin-dashboard] Fatal loading error:", err);
+      setFetchError("An unexpected error occurred while loading dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -127,10 +144,31 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   ];
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: "var(--bg)" }}>
+    <div className="min-h-dvh flex flex-col relative overflow-hidden" style={{ background: "var(--bg)" }}>
+      {/* Ambient Radial Top Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[350px] bg-gradient-to-b from-amber-500/10 via-amber-500/2 to-transparent blur-3xl z-0"
+      />
+
+      {/* TAF Logo Ambient Watermark Backdrop */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 flex items-center justify-center select-none overflow-hidden z-0"
+      >
+        <Image
+          src="/brand/taf-logo.webp"
+          alt=""
+          width={720}
+          height={720}
+          priority
+          className="opacity-[0.035] dark:opacity-[0.025] scale-110 filter blur-[0.5px] object-contain"
+        />
+      </div>
+
       {/* Top Header */}
       <header
-        className="sticky top-0 z-30 border-b backdrop-blur-xl"
+        className="sticky top-0 z-30 border-b backdrop-blur-xl relative"
         style={{
           background: "var(--surface)",
           borderColor: "var(--border)",
@@ -248,23 +286,22 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
       </header>
 
       {/* Main Content Area */}
-      <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:px-6 sm:py-6">
-        {loading && !data ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <Skeleton className="h-28 rounded-2xl" />
-              <Skeleton className="h-28 rounded-2xl" />
-              <Skeleton className="h-28 rounded-2xl" />
-              <Skeleton className="h-28 rounded-2xl" />
-              <Skeleton className="h-28 rounded-2xl" />
+      <main className="mx-auto w-full max-w-7xl flex-1 p-4 sm:px-6 sm:py-6 relative z-10">
+        {/* OVERVIEW TAB */}
+        {tab === "overview" && (
+          loading && !data ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+                <Skeleton className="h-28 rounded-2xl" />
+              </div>
+              <Skeleton className="h-64 rounded-2xl" />
             </div>
-            <Skeleton className="h-64 rounded-2xl" />
-          </div>
-        ) : (
-          <>
-            {/* OVERVIEW TAB */}
-            {tab === "overview" && data && (
-              <div className="space-y-6">
+          ) : data ? (
+            <div className="space-y-6">
                 {/* Hero Greeting & Quick Action Banner */}
                 <div
                   className="rounded-2xl border p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden"
@@ -664,33 +701,54 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                   </Card>
                 </div>
               </div>
-            )}
+            ) : (
+              <Card className="p-10 text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto text-xl font-bold">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100">
+                    Overview Metrics Unavailable
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
+                    {fetchError || "Could not retrieve real-time metrics. Please retry or sign in again."}
+                  </p>
+                </div>
+                <Button variant="brand" size="sm" onClick={fetchOverview}>
+                  <RefreshIcon className="w-3.5 h-3.5" />
+                  <span>Retry Loading</span>
+                </Button>
+              </Card>
+            )
+          )}
 
-            {/* USERS TAB */}
-            {tab === "users" && <UsersManager />}
+          {/* USERS TAB */}
+          {tab === "users" && <UsersManager />}
 
-            {/* STATIONS TAB */}
-            {tab === "stations" && data && (
-              <StationsManager stations={data.stations} onRefresh={fetchOverview} />
-            )}
+          {/* STATIONS TAB */}
+          {tab === "stations" && (
+            <StationsManager
+              stations={data?.stations ?? []}
+              loading={loading && !data}
+              onRefresh={fetchOverview}
+            />
+          )}
 
-            {/* FUEL TYPES TAB */}
-            {tab === "fuels" && (
-              <FuelTypesManager fuelTypes={fuelTypes} onRefresh={fetchOverview} />
-            )}
+          {/* FUEL TYPES TAB */}
+          {tab === "fuels" && (
+            <FuelTypesManager fuelTypes={fuelTypes} onRefresh={fetchOverview} />
+          )}
 
-            {/* SETTINGS TAB */}
-            {tab === "settings" && (
-              <SettingsManager initialSettings={settings} onRefresh={fetchOverview} />
-            )}
+          {/* SETTINGS TAB */}
+          {tab === "settings" && (
+            <SettingsManager initialSettings={settings} onRefresh={fetchOverview} />
+          )}
 
-            {/* ANALYTICS TAB */}
-            {tab === "analytics" && <AnalyticsViewer />}
+          {/* ANALYTICS TAB */}
+          {tab === "analytics" && <AnalyticsViewer />}
 
-            {/* AUDIT LOG TAB */}
-            {tab === "audit" && <AuditLogViewer />}
-          </>
-        )}
+          {/* AUDIT LOG TAB */}
+          {tab === "audit" && <AuditLogViewer />}
       </main>
     </div>
   );
