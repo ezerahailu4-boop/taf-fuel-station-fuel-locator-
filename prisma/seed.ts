@@ -4,12 +4,14 @@
  * Run: npm run db:seed
  */
 import "dotenv/config";
+import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { FuelStatus, PrismaClient, Role, StationStatus } from "../generated/prisma/client";
 
 const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
 if (!connectionString) throw new Error("Set DIRECT_URL or DATABASE_URL before seeding");
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+const db = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000);
 
