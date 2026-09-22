@@ -2,11 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/notifications",
-      "schedule": "* * * * *"
-    },
-    {
-      "path": "/api/cron/stale-reminders",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
