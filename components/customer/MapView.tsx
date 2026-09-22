@@ -11,6 +11,7 @@ import type { MapController, MapMarkerSpec } from "@/lib/map/types";
 import { stationToneForFuel, TONE_GLYPH } from "@/lib/stations/tone";
 import type { StationDTO } from "@/types/stations";
 import { buildStationPopup } from "./popup";
+import { useStations } from "./StationsProvider";
 
 const ADAMA_REST_STOP: LatLng = { lat: 8.751643, lng: 39.0160711 };
 
@@ -33,6 +34,7 @@ export function MapView({
   const tApp = useTranslations("app");
   const locale = useLocale();
   const router = useRouter();
+  const { requestLocation } = useStations();
 
   const host = useRef<HTMLDivElement>(null);
   const ctrl = useRef<MapController | null>(null);
@@ -117,6 +119,22 @@ export function MapView({
         <div role="alert" className="absolute inset-0 flex items-center justify-center bg-red-100 p-6 text-center text-red-900">
           {t("unavailable")}
         </div>
+      )}
+      {state === "ready" && (
+        <button
+          type="button"
+          onClick={async () => {
+            const loc = await requestLocation();
+            if (loc && ctrl.current) {
+              ctrl.current.setUserLocation(loc);
+            }
+          }}
+          className="absolute bottom-4 right-4 z-[400] flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-base shadow-md ring-1 ring-black/10 transition active:scale-95 dark:bg-neutral-800 dark:ring-white/10"
+          title="Locate me"
+          aria-label="Locate me"
+        >
+          <span aria-hidden>🎯</span>
+        </button>
       )}
     </div>
   );

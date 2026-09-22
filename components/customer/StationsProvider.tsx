@@ -103,6 +103,25 @@ export function StationsProvider({ children }: { children: React.ReactNode }) {
     void load(false);
   }, [load]);
 
+  // Auto-detect user location on launch (gentle background detection)
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const p = await getCurrentLocation(6000);
+        if (active && p) {
+          setLocation({ ...p, source: "gps" });
+          setLocationStatus("idle");
+        }
+      } catch {
+        if (active) setLocationStatus("idle");
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Live updates: a broadcast is only a hint; we re-fetch that station from the API (never trust the payload).
   useEffect(() => {
     const timers = new Map<string, ReturnType<typeof setTimeout>>();

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { FuelChips } from "@/components/customer/FuelChips";
+import { NearestStationSpotlight } from "@/components/customer/NearestStationSpotlight";
 import { PageHeader } from "@/components/customer/PageHeader";
 import { StationCard } from "@/components/customer/StationCard";
 import { useStations } from "@/components/customer/StationsProvider";
@@ -32,15 +33,13 @@ export default function HomePage() {
   const goNearest = () => router.push("/nearest");
 
   return (
-    <main>
+    <main className="pb-8">
       <PageHeader title={tApp("name")} subtitle={tApp("tagline")} />
 
-      <section className="mx-4 mt-2 space-y-4 rounded-3xl p-5 shadow-sm ring-1 ring-black/5" style={{ background: "var(--surface)" }}>
-        <button onClick={goNearest} className="flex min-h-16 w-full flex-col items-center justify-center rounded-2xl bg-brand-orange px-4 text-neutral-900">
-          <span className="text-xl font-extrabold">📍 {t("cta")}</span>
-          <span className="text-sm font-medium opacity-80">{t("ctaHint")}</span>
-        </button>
+      {/* Hero Spotlight: Nearest & Available Station */}
+      <NearestStationSpotlight />
 
+      <section className="mx-4 mt-3 space-y-3 rounded-3xl p-4 shadow-sm ring-1 ring-black/5" style={{ background: "var(--surface)" }}>
         <form
           role="search"
           onSubmit={(e) => {
@@ -51,9 +50,16 @@ export default function HomePage() {
         >
           <label className="flex-1">
             <span className="sr-only">{t("search")}</span>
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={`🔎 ${t("searchPlaceholder")}`} maxLength={80} className="min-h-12 w-full rounded-xl border px-4 text-base" style={{ background: "var(--bg)", borderColor: "var(--border)" }} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder={`🔎 ${t("searchPlaceholder")}`}
+              maxLength={80}
+              className="min-h-12 w-full rounded-2xl border px-4 text-sm"
+              style={{ background: "var(--bg)", borderColor: "var(--border)" }}
+            />
           </label>
-          <button className="min-h-12 rounded-xl border px-4 font-semibold" style={{ borderColor: "var(--border)" }}>
+          <button className="min-h-12 rounded-2xl border px-4 text-sm font-bold" style={{ borderColor: "var(--border)" }}>
             {t("search")}
           </button>
         </form>
