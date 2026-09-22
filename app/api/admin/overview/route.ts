@@ -15,12 +15,15 @@ export const GET = handle(async (req) => {
     totalFuelTypes,
     activeFuelTypes,
     totalSubscribers,
+    customersCount,
+    newUsersToday,
     activeSubscriptions,
     deliveriesSent,
     deliveriesPending,
     deliveriesBlocked,
     recentActivity,
     stationSummaries,
+    recentUsers,
   ] = await Promise.all([
     db.station.count(),
     db.station.count({ where: { isActive: true } }),
@@ -28,6 +31,14 @@ export const GET = handle(async (req) => {
     db.fuelType.count(),
     db.fuelType.count({ where: { isActive: true } }),
     db.user.count({ where: { isActive: true } }),
+    db.user.count({ where: { role: "CUSTOMER", isActive: true } }).catch(() => 0),
+    db.user
+      .count({
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+        },
+      })
+      .catch(() => 0),
     db.notificationSubscription.count({ where: { isActive: true } }),
     db.notificationDelivery.count({ where: { status: "SENT" } }),
     db.notificationDelivery.count({ where: { status: "PENDING" } }),
@@ -56,15 +67,56 @@ export const GET = handle(async (req) => {
         },
       },
     }),
+    typeof db.user.findMany === "function"
+      ? db.user
+          .findMany({
+            take: 10,
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              telegramUserId: true,
+              firstName: true,
+              lastName: true,
+              username: true,
+              role: true,
+              isActive: true,
+              createdAt: true,
+              lastLoginAt: true,
+              _count: {
+                select: {
+                  subscriptions: { where: { isActive: true } },
+                },
+              },
+            },
+          })
+          .catch(() => [])
+      : Promise.resolve([]),
   ]);
 
   return json({
     stats: {
       stations: { total: totalStations, active: activeStations, open: openStations },
       fuelTypes: { total: totalFuelTypes, active: activeFuelTypes },
-      subscribers: { totalUsers: totalSubscribers, activeSubscriptions },
+      subscribers: {
+        totalUsers: totalSubscribers,
+        customersCount,
+        newToday: newUsersToday,
+        activeSubscriptions,
+      },
       notifications: { sent: deliveriesSent, pending: deliveriesPending, blocked: deliveriesBlocked },
     },
+    recentUsers: (recentUsers || []).map((u) => ({
+      id: u.id,
+      telegramUserId: u.telegramUserId.toString(),
+      firstName: u.firstName,
+      lastName: u.lastName,
+      username: u.username,
+      role: u.role,
+      isActive: u.isActive,
+      createdAt: u.createdAt.toISOString(),
+      lastLoginAt: u.lastLoginAt ? u.lastLoginAt.toISOString() : null,
+      activeAlerts: u._count?.subscriptions ?? 0,
+    })),
     recentActivity: recentActivity.map((a) => ({
       id: a.id,
       action: a.action,

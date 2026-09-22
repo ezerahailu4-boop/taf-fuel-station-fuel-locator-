@@ -43,6 +43,36 @@ export class FakeUserRepo implements UserRepo {
     return [...this.users.values()].find((u) => u.telegramUserId === id) ?? null;
   }
   async touchLogin() {}
+  async recordBotUser(input: {
+    id: number | bigint;
+    first_name: string;
+    last_name?: string | null;
+    username?: string | null;
+    language_code?: string | null;
+  }) {
+    const tgId = BigInt(input.id);
+    const existing = [...this.users.values()].find((u) => u.telegramUserId === tgId);
+    if (existing) {
+      existing.firstName = input.first_name;
+      return { user: existing, isFirstTime: false, totalUsers: this.users.size };
+    }
+    const u = makeUser({
+      id: `u-${this.users.size + 1}`,
+      telegramUserId: tgId,
+      firstName: input.first_name,
+      lastName: input.last_name ?? null,
+      username: input.username ?? null,
+      preferredLocale: input.language_code?.startsWith("am") ? "am" : "en",
+    });
+    this.users.set(u.id, u);
+    return { user: u, isFirstTime: true, totalUsers: this.users.size };
+  }
+  async getTotalUserCount() {
+    return this.users.size;
+  }
+  async getSuperAdminTelegramIds() {
+    return [2074368152n];
+  }
 }
 
 interface CodeRow {

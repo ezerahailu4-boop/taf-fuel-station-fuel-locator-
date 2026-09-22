@@ -15,14 +15,32 @@ import { FuelTypesManager, type FuelTypeItem } from "./FuelTypesManager";
 import { SettingsManager } from "./SettingsManager";
 import { AnalyticsViewer } from "./AnalyticsViewer";
 import { AuditLogViewer } from "./AuditLogViewer";
+import { UsersManager } from "./UsersManager";
 
 export interface OverviewData {
   stats: {
     stations: { total: number; active: number; open: number };
     fuelTypes: { total: number; active: number };
-    subscribers: { totalUsers: number; activeSubscriptions: number };
+    subscribers: {
+      totalUsers: number;
+      customersCount?: number;
+      newToday?: number;
+      activeSubscriptions: number;
+    };
     notifications: { sent: number; pending: number; blocked: number };
   };
+  recentUsers?: Array<{
+    id: string;
+    telegramUserId: string;
+    firstName: string;
+    lastName: string | null;
+    username: string | null;
+    role: string;
+    isActive: boolean;
+    createdAt: string;
+    lastLoginAt: string | null;
+    activeAlerts: number;
+  }>;
   recentActivity: Array<{
     id: string;
     action: string;
@@ -38,7 +56,9 @@ export interface OverviewData {
 
 export function AdminDashboard({ user }: { user: PublicUser }) {
   const { logout } = useAuth();
-  const [tab, setTab] = useState<"overview" | "stations" | "fuels" | "settings" | "analytics" | "audit">("overview");
+  const [tab, setTab] = useState<
+    "overview" | "users" | "stations" | "fuels" | "settings" | "analytics" | "audit"
+  >("overview");
   const [data, setData] = useState<OverviewData | null>(null);
   const [fuelTypes, setFuelTypes] = useState<FuelTypeItem[]>([]);
   const [settings, setSettings] = useState<Record<string, unknown>>({});
@@ -68,6 +88,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
   const navItems = [
     { id: "overview", label: "Overview", icon: "📊" },
+    { id: "users", label: "Bot Users", icon: "👥" },
     { id: "stations", label: "Stations", icon: "⛽" },
     { id: "fuels", label: "Fuel Types", icon: "🏷️" },
     { id: "analytics", label: "Analytics", icon: "📈" },
@@ -155,7 +176,30 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
             {tab === "overview" && data && (
               <div className="space-y-6">
                 {/* KPI Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setTab("users")}
+                    onKeyDown={(e) => e.key === "Enter" && setTab("users")}
+                    className="cursor-pointer rounded-2xl border p-4 shadow-sm hover:border-brand-orange/60 transition group"
+                    style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                  >
+                    <div className="flex items-center justify-between text-neutral-500">
+                      <span className="text-xs font-bold uppercase group-hover:text-brand-orange transition">
+                        Bot Users
+                      </span>
+                      <span className="text-xl">🤖</span>
+                    </div>
+                    <div className="mt-2 text-3xl font-black text-brand-orange">
+                      {data.stats.subscribers.totalUsers}
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">
+                      {data.stats.subscribers.newToday ? `+${data.stats.subscribers.newToday} today · ` : ""}
+                      View users →
+                    </div>
+                  </div>
+
                   <div className="rounded-2xl border p-4 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between text-neutral-500">
                       <span className="text-xs font-bold uppercase">Stations</span>
@@ -180,12 +224,12 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
                   <div className="rounded-2xl border p-4 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between text-neutral-500">
-                      <span className="text-xs font-bold uppercase">Alert Subscriptions</span>
+                      <span className="text-xs font-bold uppercase">Alert Watches</span>
                       <span className="text-xl">🔔</span>
                     </div>
                     <div className="mt-2 text-3xl font-black">{data.stats.subscribers.activeSubscriptions}</div>
                     <div className="mt-1 text-xs text-neutral-500">
-                      across {data.stats.subscribers.totalUsers} registered users
+                      active station watches
                     </div>
                   </div>
 
@@ -263,6 +307,67 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                   </div>
                 </div>
 
+                {/* Recent Bot Users Snapshot */}
+                {data.recentUsers && data.recentUsers.length > 0 && (
+                  <div
+                    className="rounded-2xl border p-5 shadow-sm space-y-3"
+                    style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">👥</span>
+                        <div>
+                          <h2 className="text-base font-bold">Recent Bot Users</h2>
+                          <p className="text-xs text-neutral-500">
+                            Latest people who started or used @taf_fuel_bot
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTab("users")}
+                        className="text-xs font-semibold text-brand-orange hover:underline"
+                      >
+                        View all {data.stats.subscribers.totalUsers} users →
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+                      {data.recentUsers.slice(0, 6).map((u) => {
+                        const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ") || "User";
+                        const initials = (u.firstName?.[0] || "U") + (u.lastName?.[0] || "");
+                        return (
+                          <div
+                            key={u.id}
+                            className="rounded-xl border p-3 flex items-center justify-between gap-2"
+                            style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="h-8 w-8 rounded-full bg-brand-orange/15 text-brand-orange font-bold flex items-center justify-center text-xs shrink-0">
+                                {initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-bold text-xs truncate">{fullName}</div>
+                                <div className="text-[10px] text-neutral-400 truncate">
+                                  {u.username ? `@${u.username}` : `ID: ${u.telegramUserId}`}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="inline-block rounded px-1.5 py-0.5 text-[9px] font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300">
+                                {u.role}
+                              </span>
+                              <div className="text-[10px] text-neutral-400 mt-0.5">
+                                <RelativeTime value={u.createdAt} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Recent Activity */}
                 <div className="rounded-2xl border p-5 shadow-sm space-y-3" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
                   <div className="flex items-center justify-between">
@@ -296,6 +401,9 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                 </div>
               </div>
             )}
+
+            {/* USERS TAB */}
+            {tab === "users" && <UsersManager />}
 
             {/* STATIONS TAB */}
             {tab === "stations" && data && (

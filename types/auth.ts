@@ -38,12 +38,29 @@ export function toPublicUser(u: AuthUser): PublicUser {
   };
 }
 
+export interface BotUserRegistrationInput {
+  id: number | bigint;
+  first_name: string;
+  last_name?: string | null;
+  username?: string | null;
+  language_code?: string | null;
+}
+
+export interface BotUserRegistrationResult {
+  user: AuthUser;
+  isFirstTime: boolean;
+  totalUsers: number;
+}
+
 export interface UserRepo {
   /** Creates a CUSTOMER if the Telegram user is new; otherwise refreshes profile fields + last login. */
   upsertFromTelegram(user: TelegramUser, now: Date): Promise<AuthUser>;
   findById(id: string): Promise<AuthUser | null>;
   findByTelegramId(telegramUserId: bigint): Promise<AuthUser | null>;
   touchLogin(id: string, now: Date): Promise<void>;
+  recordBotUser(input: BotUserRegistrationInput): Promise<BotUserRegistrationResult>;
+  getTotalUserCount(): Promise<number>;
+  getSuperAdminTelegramIds(): Promise<bigint[]>;
 }
 
 export interface LoginCodeRepo {
