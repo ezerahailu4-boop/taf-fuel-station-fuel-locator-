@@ -1,6 +1,3 @@
-﻿-- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('CUSTOMER', 'VIEWER', 'BRANCH_ADMIN', 'SUPER_ADMIN');
 
@@ -63,7 +60,7 @@ CREATE TABLE "fuel_types" (
     "slug" TEXT NOT NULL,
     "name_en" TEXT NOT NULL,
     "name_am" TEXT NOT NULL,
-    "icon" TEXT NOT NULL DEFAULT 'Ôø¢',
+    "icon" TEXT NOT NULL DEFAULT '⛽',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "display_order" INTEGER NOT NULL DEFAULT 0,
 
@@ -357,8 +354,6 @@ ALTER TABLE "analytics_events" ADD CONSTRAINT "analytics_events_fuel_type_id_fke
 -- AddForeignKey
 ALTER TABLE "login_codes" ADD CONSTRAINT "login_codes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
-
-
 -- RLS Policies
 -- Enable Row Level Security on every application table and add NO policies.
 -- Result: Supabase's public (anon/authenticated) API cannot read or write anything.
@@ -379,9 +374,7 @@ ALTER TABLE "settings"                     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "analytics_events"             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "login_codes"                  ENABLE ROW LEVEL SECURITY;
 
-
 -- Seed Data
-
 -- Seed Fuel Types
 INSERT INTO "fuel_types" ("id", "slug", "name_en", "name_am", "icon", "display_order", "is_active", "created_at", "updated_at")
 VALUES
