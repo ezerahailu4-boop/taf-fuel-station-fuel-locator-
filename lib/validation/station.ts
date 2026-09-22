@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { FUEL_STATUSES, SETTABLE_FUEL_STATUSES, STATION_STATUSES } from "@/lib/fuel/enums";
 
-export const uuid = z.string().uuid();
+export const uuid = z.string().regex(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/, "Invalid UUID");
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const timeRange = z.tuple([z.string().regex(HHMM), z.string().regex(HHMM)]);

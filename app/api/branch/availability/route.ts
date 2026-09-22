@@ -1,4 +1,4 @@
-import { authContext, parseBody } from "@/lib/api/context";
+import { branchAuthContext, parseBody } from "@/lib/api/context";
 import { handle, json } from "@/lib/api/handler";
 import { requireRole } from "@/lib/auth/rbac";
 import { availabilityUpdateSchema } from "@/lib/validation/station";
@@ -11,7 +11,7 @@ import { saveAvailability } from "@/services/fuelStatusService";
  * Branch admins are locked to their own station; Super Admins must pass stationId.
  */
 export const PUT = handle(async (req) => {
-  const { actor, ip } = await authContext(req, { write: true });
+  const { actor, ip } = await branchAuthContext(req, { write: true });
   requireRole(actor, "BRANCH_ADMIN", "SUPER_ADMIN");
   const input = await parseBody(req, availabilityUpdateSchema);
   const { changed, plan } = await saveAvailability(fuelStatusDeps(), actor, input, ip);

@@ -30,7 +30,7 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
   const tApp = useTranslations("app");
   const tStation = useTranslations("station.status");
   const locale = useLocale();
-  const { api, logout } = useAuth();
+  const { api, logout, state } = useAuth();
 
   const isBranchAdmin = user.role === "BRANCH_ADMIN";
   const canWrite = user.role === "BRANCH_ADMIN" || user.role === "SUPER_ADMIN";
@@ -189,9 +189,11 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
         </div>
         <div className="flex items-center gap-2">
           <LocaleSwitcher />
-          <button onClick={() => void logout()} className="min-h-10 rounded-lg border px-3 text-sm" style={{ borderColor: "var(--border)" }}>
-            {c("logout")}
-          </button>
+          {state.status === "authenticated" && (
+            <button onClick={() => void logout()} className="min-h-10 rounded-lg border px-3 text-sm" style={{ borderColor: "var(--border)" }}>
+              {c("logout")}
+            </button>
+          )}
         </div>
       </header>
 

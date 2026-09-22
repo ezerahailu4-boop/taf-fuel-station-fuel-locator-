@@ -1,15 +1,27 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { LoginForm } from "@/components/auth/LoginForm";
 import { Skeleton } from "@/components/ui/Skeleton";
+import type { PublicUser } from "@/types/auth";
 import { BranchDashboard } from "./BranchDashboard";
 
-/** Auth gate for the branch UI: Telegram Mini App login is automatic; on the web the admin signs in with a bot code. */
+const DEFAULT_STAFF_USER: PublicUser = {
+  id: "c0000000-0000-0000-0000-000000000001",
+  telegramUserId: "2074368152",
+  role: "SUPER_ADMIN",
+  stationId: "b0000000-0000-0000-0000-000000000001",
+  stationName: "Tolroad TAF Station",
+  isActive: true,
+  language: "en",
+};
+
+/**
+ * Passwordless branch staff portal:
+ * Anyone opening /branch can immediately view and update station fuel availability
+ * without entering a password or OTP code.
+ */
 export function BranchApp() {
   const { state } = useAuth();
-  const c = useTranslations("common");
 
   if (state.status === "loading") {
     return (
@@ -19,15 +31,12 @@ export function BranchApp() {
       </div>
     );
   }
-  if (state.status === "anonymous") {
-    return (
-      <main className="flex min-h-dvh items-center justify-center p-4">
-        <LoginForm />
-      </main>
-    );
-  }
-  if (state.user.role === "CUSTOMER") {
-    return <p className="mx-auto max-w-md p-8 text-center">{c("readOnly")}</p>;
-  }
-  return <BranchDashboard user={state.user} />;
+
+  // If signed in with an administrative role, use that user; otherwise use the default staff user
+  const user: PublicUser =
+    state.status === "authenticated" && (state.user.role === "SUPER_ADMIN" || state.user.role === "BRANCH_ADMIN" || state.user.role === "VIEWER")
+      ? state.user
+      : DEFAULT_STAFF_USER;
+
+  return <BranchDashboard user={user} />;
 }
