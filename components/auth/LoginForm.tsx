@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ApiClientError } from "@/lib/client/api";
 import { useAuth } from "./AuthProvider";
 
-export function LoginForm() {
+export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const t = useTranslations("login");
   const c = useTranslations("common");
   const { requestCode, loginWithCode } = useAuth();
@@ -35,6 +35,7 @@ export function LoginForm() {
     setError(null);
     try {
       await loginWithCode(telegramId.trim(), code.trim());
+      onSuccess?.();
     } catch (err) {
       setError(err instanceof ApiClientError && err.status === 401 ? t("invalid") : err instanceof ApiClientError ? err.message : c("retry"));
     } finally {
