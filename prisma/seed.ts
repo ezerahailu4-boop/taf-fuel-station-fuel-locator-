@@ -24,7 +24,7 @@ function telegramId(name: string, fallback: string): bigint {
 const FUELS = [
   { slug: "benzine", nameEn: "Benzine", nameAm: "ቤንዚን", icon: "⛽", displayOrder: 1 },
   { slug: "diesel", nameEn: "Diesel", nameAm: "ናፍጣ", icon: "⛽", displayOrder: 2 },
-  { slug: "kerosene", nameEn: "Kerosene", nameAm: "ነጭ ጋዝ", icon: "⛽", displayOrder: 3 },
+  // { slug: "kerosene", nameEn: "Kerosene", nameAm: "ነጭ ጋዝ", icon: "⛽", displayOrder: 3 },
 ];
 
 // Production branch location specified: Tolroad TAF Station (Adama-Finfinee Rest Stop)
@@ -107,7 +107,7 @@ async function main() {
   const initialAvailability: Record<string, FuelStatus> = {
     benzine: FuelStatus.AVAILABLE,
     diesel: FuelStatus.AVAILABLE,
-    kerosene: FuelStatus.LIMITED,
+    // kerosene: FuelStatus.LIMITED,
   };
 
   for (const fuel of fuelTypes) {

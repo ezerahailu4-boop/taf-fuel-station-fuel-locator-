@@ -14,8 +14,8 @@ const seedSql = `
 INSERT INTO "fuel_types" ("id", "slug", "name_en", "name_am", "icon", "display_order", "is_active")
 VALUES
   ('a0000000-0000-0000-0000-000000000001', 'benzine', 'Benzine', 'ቤንዚን', '⛽', 1, true),
-  ('a0000000-0000-0000-0000-000000000002', 'diesel', 'Diesel', 'ናፍጣ', '⛽', 2, true),
-  ('a0000000-0000-0000-0000-000000000003', 'kerosene', 'Kerosene', 'ነጭ ጋዝ', '⛽', 3, true)
+  ('a0000000-0000-0000-0000-000000000002', 'diesel', 'Diesel', 'ናፍጣ', '⛽', 2, true)
+  -- ('a0000000-0000-0000-0000-000000000003', 'kerosene', 'Kerosene', 'ነጭ ጋዝ', '⛽', 3, true)
 ON CONFLICT ("slug") DO UPDATE SET "name_en" = EXCLUDED."name_en", "name_am" = EXCLUDED."name_am";
 
 -- Seed Station: Tolroad TAF Station
@@ -66,8 +66,8 @@ ON CONFLICT ("user_id") DO UPDATE SET "station_id" = EXCLUDED."station_id";
 INSERT INTO "station_fuel_status" ("id", "station_id", "fuel_type_id", "status", "last_updated", "last_confirmed_at", "updated_by")
 VALUES
   ('e0000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'AVAILABLE', NOW(), NOW(), 'c0000000-0000-0000-0000-000000000001'),
-  ('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'AVAILABLE', NOW(), NOW(), 'c0000000-0000-0000-0000-000000000001'),
-  ('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', 'LIMITED', NOW(), NOW(), 'c0000000-0000-0000-0000-000000000001')
+  ('e0000000-0000-0000-0000-000000000002', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000002', 'AVAILABLE', NOW(), NOW(), 'c0000000-0000-0000-0000-000000000001')
+  -- ('e0000000-0000-0000-0000-000000000003', 'b0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000003', 'LIMITED', NOW(), NOW(), 'c0000000-0000-0000-0000-000000000001')
 ON CONFLICT ("station_id", "fuel_type_id") DO UPDATE SET "status" = EXCLUDED."status", "last_updated" = NOW();
 
 -- Seed Default Settings
