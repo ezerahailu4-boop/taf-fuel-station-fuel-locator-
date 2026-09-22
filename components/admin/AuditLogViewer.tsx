@@ -3,6 +3,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/client/api";
 import { RelativeTime } from "@/components/ui/RelativeTime";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { AuditIcon, ShieldCheckIcon } from "@/components/ui/icons";
 import type { Page, ActivityDTO } from "@/types/stations";
 
 export function AuditLogViewer() {
@@ -35,129 +39,159 @@ export function AuditLogViewer() {
   }, [fetchLogs]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold">Activity & Security Audit Log</h2>
-          <p className="text-xs text-neutral-500">
-            Immutable log of all fuel updates, station changes, and security authorization checks.
-          </p>
-        </div>
-        <select
-          value={actionFilter}
-          onChange={(e) => {
-            setActionFilter(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-xl border px-3 py-1.5 text-xs outline-none"
-          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-        >
-          <option value="">All Actions</option>
-          <option value="FUEL_STATUS_CHANGED">FUEL_STATUS_CHANGED</option>
-          <option value="AVAILABILITY_CONFIRMED">AVAILABILITY_CONFIRMED</option>
-          <option value="STATION_STATUS_CHANGED">STATION_STATUS_CHANGED</option>
-          <option value="STATION_CREATED">STATION_CREATED</option>
-          <option value="STATION_UPDATED">STATION_UPDATED</option>
-          <option value="ADMIN_ASSIGNED">ADMIN_ASSIGNED</option>
-          <option value="SETTINGS_UPDATED">SETTINGS_UPDATED</option>
-          <option value="ACCESS_DENIED">ACCESS_DENIED</option>
-        </select>
-      </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-orange-500/10 text-brand-orange">
+                <AuditIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg font-black">Activity & Security Audit Log</CardTitle>
+                  <Badge variant="brand">{total} Events</Badge>
+                </div>
+                <CardDescription>
+                  Immutable audit trail of all fuel updates, branch changes, and security authorization checks.
+                </CardDescription>
+              </div>
+            </div>
 
-      <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-        <table className="w-full text-left text-sm">
-          <thead className="border-b bg-neutral-50/50 text-xs text-neutral-500 dark:bg-neutral-900/50" style={{ borderColor: "var(--border)" }}>
-            <tr>
-              <th className="p-3.5">Time</th>
-              <th className="p-3.5">Action</th>
-              <th className="p-3.5">Actor</th>
-              <th className="p-3.5">Station</th>
-              <th className="p-3.5">Details</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-neutral-500">
-                  Loading logs…
-                </td>
-              </tr>
-            ) : logs.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-8 text-center text-neutral-500">
-                  No activity logs found.
-                </td>
-              </tr>
-            ) : (
-              logs.map((log) => {
-                const isDenied = log.action === "ACCESS_DENIED";
-                return (
-                  <tr
-                    key={log.id}
-                    className={`hover:bg-neutral-50/40 dark:hover:bg-neutral-800/30 ${
-                      isDenied ? "bg-red-50/30 dark:bg-red-950/20" : ""
-                    }`}
-                  >
-                    <td className="p-3.5 text-xs text-neutral-500 whitespace-nowrap">
-                      <RelativeTime value={log.createdAt} />
-                    </td>
-                    <td className="p-3.5 font-mono text-xs">
-                      <span
-                        className={`inline-block rounded px-2 py-0.5 font-semibold ${
-                          isDenied
-                            ? "bg-red-100 text-red-800"
-                            : log.action.includes("CONFIRMED")
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-300"
-                        }`}
-                      >
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="p-3.5 text-xs">
-                      {log.actor ? `${log.actor.firstName} ${log.actor.lastName || ""}`.trim() : "System / Unauthenticated"}
-                    </td>
-                    <td className="p-3.5 text-xs font-medium">
-                      {log.station ? `TAF ${log.station.branchName}` : "—"}
-                    </td>
-                    <td className="p-3.5 text-xs font-mono text-neutral-600 dark:text-neutral-400 max-w-xs truncate">
-                      {log.newValue ? JSON.stringify(log.newValue) : "—"}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {total > 15 && (
-        <div className="flex items-center justify-between text-xs text-neutral-500 pt-2">
-          <span>
-            Showing {(page - 1) * 15 + 1}–{Math.min(page * 15, total)} of {total} events
-          </span>
-          <div className="space-x-2">
-            <button
-              type="button"
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-lg border px-3 py-1.5 font-medium disabled:opacity-40"
-              style={{ borderColor: "var(--border)" }}
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={page * 15 >= total}
-              onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border px-3 py-1.5 font-medium disabled:opacity-40"
-              style={{ borderColor: "var(--border)" }}
-            >
-              Next
-            </button>
+            <div className="flex items-center gap-2">
+              <select
+                value={actionFilter}
+                onChange={(e) => {
+                  setActionFilter(e.target.value);
+                  setPage(1);
+                }}
+                className="rounded-xl border px-3 py-2 text-xs font-semibold outline-none focus:border-brand-orange transition"
+                style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+              >
+                <option value="">All Audit Actions</option>
+                <option value="FUEL_STATUS_CHANGED">FUEL_STATUS_CHANGED</option>
+                <option value="USER_STARTED_BOT">USER_STARTED_BOT</option>
+                <option value="AVAILABILITY_CONFIRMED">AVAILABILITY_CONFIRMED</option>
+                <option value="STATION_STATUS_CHANGED">STATION_STATUS_CHANGED</option>
+                <option value="STATION_CREATED">STATION_CREATED</option>
+                <option value="STATION_UPDATED">STATION_UPDATED</option>
+                <option value="ADMIN_ASSIGNED">ADMIN_ASSIGNED</option>
+                <option value="SETTINGS_UPDATED">SETTINGS_UPDATED</option>
+                <option value="ACCESS_DENIED">ACCESS_DENIED</option>
+              </select>
+            </div>
           </div>
+        </CardHeader>
+      </Card>
+
+      {/* Table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr
+                className="border-b text-neutral-400 text-[11px] uppercase tracking-wider bg-neutral-500/5"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <th className="p-3.5 pl-5 font-bold">Time</th>
+                <th className="p-3.5 font-bold">Action</th>
+                <th className="p-3.5 font-bold">Actor</th>
+                <th className="p-3.5 font-bold">Station</th>
+                <th className="p-3.5 pr-5 font-bold">Details</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="p-10 text-center text-neutral-400">
+                    Loading audit trail…
+                  </td>
+                </tr>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-10 text-center text-neutral-400">
+                    No activity logs found.
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => {
+                  const isDenied = log.action === "ACCESS_DENIED";
+                  const isUserJoined = log.action === "USER_STARTED_BOT";
+                  return (
+                    <tr
+                      key={log.id}
+                      className={`hover:bg-neutral-500/5 transition ${
+                        isDenied ? "bg-red-50/30 dark:bg-red-950/20" : ""
+                      }`}
+                    >
+                      <td className="p-3.5 pl-5 text-neutral-500 whitespace-nowrap">
+                        <RelativeTime value={log.createdAt} />
+                      </td>
+                      <td className="p-3.5 font-mono">
+                        <Badge
+                          variant={
+                            isDenied
+                              ? "destructive"
+                              : isUserJoined
+                              ? "brand"
+                              : log.action.includes("CONFIRMED")
+                              ? "success"
+                              : "secondary"
+                          }
+                        >
+                          {isDenied && <ShieldCheckIcon className="w-3 h-3 text-red-500" />}
+                          <span>{log.action}</span>
+                        </Badge>
+                      </td>
+                      <td className="p-3.5 font-medium text-neutral-800 dark:text-neutral-200">
+                        {log.actor
+                          ? `${log.actor.firstName} ${log.actor.lastName || ""}`.trim()
+                          : "System"}
+                      </td>
+                      <td className="p-3.5 font-semibold text-neutral-700 dark:text-neutral-300">
+                        {log.station ? `TAF ${log.station.branchName}` : "—"}
+                      </td>
+                      <td className="p-3.5 pr-5 font-mono text-neutral-500 dark:text-neutral-400 max-w-xs truncate">
+                        {log.newValue ? JSON.stringify(log.newValue) : "—"}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {total > 15 && (
+          <div
+            className="flex items-center justify-between text-xs text-neutral-500 p-4 border-t"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <span>
+              Showing {(page - 1) * 15 + 1}–{Math.min(page * 15, total)} of {total} events
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page * 15 >= total}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

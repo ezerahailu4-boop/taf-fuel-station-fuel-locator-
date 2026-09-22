@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { apiFetch } from "@/lib/client/api";
 
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { TagIcon } from "@/components/ui/icons";
+
 export interface FuelTypeItem {
   id: string;
   slug: string;
@@ -69,7 +74,7 @@ export function FuelTypesManager({
         method: "POST",
         body: JSON.stringify(formData),
       });
-      setMessage({ type: "success", text: "Fuel type created!" });
+      setMessage({ type: "success", text: "Fuel type added successfully!" });
       setIsCreating(false);
       onRefresh();
     } catch (err: unknown) {
@@ -89,7 +94,7 @@ export function FuelTypesManager({
         method: "PUT",
         body: JSON.stringify(formData),
       });
-      setMessage({ type: "success", text: "Fuel type updated!" });
+      setMessage({ type: "success", text: "Fuel type updated successfully!" });
       setEditingFuel(null);
       onRefresh();
     } catch (err: unknown) {
@@ -118,34 +123,45 @@ export function FuelTypesManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold">Fuel Types</h2>
-          <p className="text-xs text-neutral-500">
-            Configure fuels offered by TAF stations across Ethiopia.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={startCreate}
-          className="flex items-center gap-1.5 rounded-xl bg-brand-orange px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm hover:opacity-90 active:scale-95"
-        >
-          <span>＋</span>
-          <span>Add Fuel Type</span>
-        </button>
-      </div>
+      <Card>
+        <CardHeader className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600">
+                <TagIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-lg font-black">Fuel Catalog</CardTitle>
+                  <Badge variant="brand">{fuelTypes.filter((f) => f.isActive).length} Active</Badge>
+                </div>
+                <CardDescription>
+                  Configure fuels offered by TAF stations across Ethiopia.
+                </CardDescription>
+              </div>
+            </div>
+
+            <Button variant="brand" size="sm" onClick={startCreate}>
+              <span>＋</span>
+              <span>Add Fuel Type</span>
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       {message && (
         <div
-          className={`rounded-xl p-3 text-sm font-medium ${
-            message.type === "success" ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900"
+          className={`rounded-xl p-3 text-xs font-semibold ${
+            message.type === "success"
+              ? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50"
+              : "bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/40 dark:border-red-900/50"
           }`}
         >
           {message.text}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
+      <Card className="overflow-hidden">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-neutral-50/50 text-xs text-neutral-500 dark:bg-neutral-900/50" style={{ borderColor: "var(--border)" }}>
             <tr>
@@ -168,36 +184,31 @@ export function FuelTypesManager({
                 <td className="p-4 font-medium">{f.nameAm}</td>
                 <td className="p-4 font-mono text-xs">{f.displayOrder}</td>
                 <td className="p-4">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${f.isActive ? "bg-emerald-100 text-emerald-800" : "bg-neutral-100 text-neutral-500"}`}>
+                  <Badge variant={f.isActive ? "success" : "secondary"}>
                     {f.isActive ? "Active" : "Disabled"}
-                  </span>
+                  </Badge>
                 </td>
                 <td className="p-4 text-right space-x-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => startEdit(f)}
-                    className="rounded-lg border px-2.5 py-1 text-xs font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                    style={{ borderColor: "var(--border)" }}
                   >
                     Edit
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant={f.isActive ? "outline" : "brand"}
+                    size="sm"
                     onClick={() => handleToggleActive(f)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                      f.isActive
-                        ? "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                        : "bg-emerald-100 text-emerald-900 hover:bg-emerald-200"
-                    }`}
                   >
                     {f.isActive ? "Disable" : "Enable"}
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       {/* Modal: Create or Edit */}
       {(isCreating || editingFuel) && (
