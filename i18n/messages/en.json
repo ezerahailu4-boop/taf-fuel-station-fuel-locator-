@@ -1,0 +1,218 @@
+{
+  "app": {
+    "name": "TAF Fuel Finder",
+    "tagline": "Find fuel availability near you.",
+    "disclaimer": "Reported availability. Fuel availability can change at any time."
+  },
+  "fuel": {
+    "status": {
+      "AVAILABLE": "Fuel Available",
+      "LIMITED": "Limited Fuel",
+      "OUT_OF_STOCK": "Not Available",
+      "UNKNOWN": "Unknown"
+    },
+    "stale": "Availability may be outdated"
+  },
+  "station": {
+    "status": {
+      "OPEN": "Open",
+      "CLOSED": "Closed",
+      "TEMPORARILY_CLOSED": "Temporarily Closed",
+      "MAINTENANCE": "Maintenance"
+    },
+    "viewOnMap": "View on map",
+    "directions": "Get directions",
+    "moreApps": "Other map apps",
+    "details": "Station details",
+    "away": "{distance} away",
+    "call": "Call",
+    "hours": "Opening hours",
+    "open24": "Open 24 hours",
+    "closedToday": "Closed today",
+    "hoursUnknown": "Hours not available",
+    "services": "Services",
+    "availability": "Current availability",
+    "address": "Address",
+    "phone": "Phone",
+    "notFound": "We couldn't find this station.",
+    "back": "Back to stations",
+    "backLabel": "Back"
+  },
+  "errors": {
+    "location": "📍 We couldn't access your location. Search for an area instead.",
+    "noStations": "No TAF fuel stations were found nearby.",
+    "noFuel": "Currently no selected fuel type is reported as available nearby.",
+    "server": "Something went wrong. Please try again.",
+    "network": "Connection problem. Please check your internet connection."
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "retry": "Try again",
+    "logout": "Sign out",
+    "language": "Language",
+    "readOnly": "You have read-only access.",
+    "lastUpdated": "Last updated",
+    "notReported": "Not reported yet",
+    "close": "Close"
+  },
+  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{count, plural, one {# minute ago} other {# minutes ago}}",
+    "hoursAgo": "{count, plural, one {# hour ago} other {# hours ago}}",
+    "daysAgo": "{count, plural, one {# day ago} other {# days ago}}"
+  },
+  "login": {
+    "title": "Admin sign in",
+    "intro": "Enter your Telegram ID. We'll send a one-time code to you in the TAF bot.",
+    "telegramId": "Telegram ID",
+    "sendCode": "Send code",
+    "code": "6-digit code",
+    "verify": "Sign in",
+    "codeSent": "If this ID belongs to an administrator, a code was sent in Telegram. Open the bot first (/start) if you have never used it.",
+    "invalid": "Invalid or expired code.",
+    "notInTelegram": "Not using Telegram? Sign in with a code instead."
+  },
+  "branch": {
+    "title": "Branch availability",
+    "station": "Station",
+    "stationStatus": "Station status",
+    "fuel": "Fuel",
+    "stillAccurate": "Still accurate ✓",
+    "stillAccurateHint": "Nothing changed? Confirm the info is current.",
+    "confirmedToast": "Thanks! Marked as up to date.",
+    "savedToast": "Saved. Customers can see the update now.",
+    "nothingChanged": "No changes to save.",
+    "reviewTitle": "Review changes",
+    "reviewIntro": "These updates will be visible to customers immediately:",
+    "history": "Recent activity",
+    "noHistory": "No activity yet.",
+    "pickStation": "Choose a station",
+    "noStation": "No station is assigned to your account. Ask a Super Admin to assign you.",
+    "unsaved": "You have unsaved changes",
+    "by": "by {name}",
+    "fuelOptions": {
+      "AVAILABLE": "Available",
+      "LIMITED": "Limited",
+      "OUT_OF_STOCK": "Out of stock"
+    },
+    "activity": {
+      "FUEL_STATUS_CHANGED": "{fuel}: {from} → {to}",
+      "FUEL_NOTE_CHANGED": "{fuel}: note updated",
+      "STATION_STATUS_CHANGED": "Station: {from} → {to}",
+      "AVAILABILITY_CONFIRMED": "Confirmed availability is current",
+      "ACCESS_DENIED": "Blocked access attempt",
+      "other": "{action}"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "map": "Map",
+    "stations": "Stations",
+    "alerts": "Alerts",
+    "profile": "Profile"
+  },
+  "home": {
+    "cta": "Find stations near me",
+    "ctaHint": "Nearest stations with the fuel you need",
+    "searchPlaceholder": "Search station, area, city or address",
+    "search": "Search",
+    "fuelTitle": "Which fuel do you need?",
+    "anyFuel": "Any fuel",
+    "findNearest": "Find nearest {fuel}",
+    "recent": "Recently updated",
+    "viewAll": "View all stations"
+  },
+  "location": {
+    "promptTitle": "Use your location?",
+    "promptBody": "We only use your location to find TAF stations near you. It is never stored or tracked.",
+    "allow": "Allow location",
+    "tryAgain": "Try again",
+    "asking": "Getting your location…",
+    "manual": "Or search an area instead",
+    "areaPlaceholder": "Choose an area",
+    "privacy": "Your location stays on your device and is used only for this search.",
+    "usingGps": "Using your current location",
+    "usingArea": "Using area: {area}",
+    "change": "Change"
+  },
+  "nearest": {
+    "title": "Nearest fuel",
+    "fuelLabel": "Fuel type",
+    "within": "Within {km} km",
+    "nearestAvailable": "Nearest {fuel} available",
+    "notAvailable": "Not reported as available",
+    "searching": "Searching nearby…",
+    "refresh": "Refresh"
+  },
+  "stations": {
+    "title": "Stations",
+    "searchPlaceholder": "Search stations",
+    "filters": "Filters",
+    "hideFilters": "Hide filters",
+    "fuel": "Fuel type",
+    "availableOnly": "Only stations with this fuel available",
+    "distance": "Distance",
+    "anyDistance": "Any distance",
+    "km": "{km} km",
+    "needLocation": "Turn on location to filter by distance.",
+    "useMyLocation": "Use my location",
+    "city": "City",
+    "area": "Area",
+    "all": "All",
+    "openOnly": "Open stations only",
+    "clear": "Clear filters",
+    "results": "{count, plural, one {# station} other {# stations}}"
+  },
+  "map": {
+    "title": "Station map",
+    "viewDetails": "View details",
+    "unavailable": "The map could not be loaded. You can still browse stations in the list.",
+    "tone": {
+      "available": "fuel available",
+      "limited": "limited fuel",
+      "out": "fuel not available",
+      "unknown": "availability unknown",
+      "closed": "station not open"
+    },
+    "legend": "Pin symbols: ✓ available · ! limited · ✕ not available · ? unknown · − not open"
+  },
+  "alerts": {
+    "title": "Alerts & Notifications",
+    "subtitle": "Get notified when fuel arrives at your favorite stations",
+    "subscriptionsTab": "Active Alerts",
+    "historyTab": "Alert History",
+    "subscriptionsHint": "You will receive an instant Telegram message as soon as fuel is reported available.",
+    "emptySubsTitle": "No active fuel alerts",
+    "emptySubsBody": "Browse stations and tap the bell icon on any fuel to receive instant Telegram notifications when fuel arrives.",
+    "emptyHistoryTitle": "No alerts received yet",
+    "emptyHistoryBody": "When fuel is reported available at your subscribed stations, notifications will appear here.",
+    "browseStations": "Browse stations",
+    "viewStation": "View station",
+    "remove": "Remove",
+    "markAllRead": "Mark all as read",
+    "notificationsTitle": "Notifications",
+    "new": "new",
+    "noNotifications": "No notifications",
+    "noNotificationsHint": "You have no notifications at this time.",
+    "manageAlertsLink": "Manage all alerts →",
+    "subscribe": "Turn on alerts",
+    "unsubscribe": "Turn off alerts",
+    "subscribed": "Alerts on",
+    "notifyMe": "Notify me"
+  },
+  "profile": {
+    "title": "Profile",
+    "language": "Language",
+    "about": "About TAF Fuel Finder",
+    "aboutBody": "TAF Fuel Finder shows the fuel availability reported by TAF stations. Reports come from station staff and can change at any time.",
+    "privacy": "Privacy",
+    "privacyBody": "Your location is used only on your device for a single nearby search. It is never stored and never tracked."
+  },
+  "state": {
+    "offline": "You're offline. Showing stations saved",
+    "refresh": "Refresh"
+  }
+}

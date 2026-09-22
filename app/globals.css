@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* Brand tokens sampled from the TAF logo. */
+@theme {
+  --color-brand-orange: #f39c34;
+  --color-brand-orange-deep: #ee7f26;
+  --color-brand-red-orange: #e84424;
+  --color-accent-green: #00c000;
+  --color-accent-yellow: #f2e600;
+  --color-accent-red: #e00000;
+
+  /* Fuel status colors are intentionally distinct from the brand orange. */
+  --color-status-available: #15803d;
+  --color-status-limited: #b45309;
+  --color-status-out: #b91c1c;
+  --color-status-unknown: #6b7280;
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Ethiopic", "Abyssinica SIL", sans-serif;
+}
+
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #5b6270;
+  --border: #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --text: #f3f4f6;
+    --muted: #9aa3b2;
+    --border: #262b36;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115;
+  --surface: #171a21;
+  --text: #f3f4f6;
+  --muted: #9aa3b2;
+  --border: #262b36;
+}
+
+html,
+body {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ---- Map pins & popups (Leaflet) ---- */
+.taf-pin-wrap { background: transparent; border: 0; }
+.taf-pin {
+  width: 36px; height: 36px; border-radius: 50% 50% 50% 4px; transform: rotate(-45deg);
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid #fff; box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+  color: #fff; font-weight: 800; font-size: 18px; line-height: 1;
+}
+.taf-pin__glyph { display: block; transform: rotate(45deg); }
+.taf-pin--available { background: #15803d; }
+.taf-pin--limited { background: #b45309; }
+.taf-pin--out { background: #b91c1c; }
+.taf-pin--unknown { background: #6b7280; }
+.taf-pin--closed { background: #374151; }
+.taf-pin { text-shadow: 0 1px 1px rgb(0 0 0 / 0.35); }
+
+.taf-popup { font-family: var(--font-sans); color: #1a1a1a; display: grid; gap: 6px; }
+.taf-popup__title { font-size: 16px; }
+.taf-popup__addr, .taf-popup__dist { font-size: 13px; color: #4b5563; }
+.taf-popup__dist { font-weight: 700; color: #1a1a1a; }
+.taf-popup__fuels { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 14px; }
+.taf-popup__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+.taf-popup__btn {
+  min-height: 40px; display: flex; align-items: center; justify-content: center; text-align: center;
+  border: 1px solid #d1d5db; border-radius: 10px; background: #fff; color: #1a1a1a;
+  font-size: 13px; font-weight: 700; text-decoration: none; cursor: pointer; padding: 6px;
+}
+.leaflet-container a.taf-popup__btn { color: #1a1a1a; }
+.taf-popup__btn--primary { background: var(--color-brand-orange); border-color: transparent; }
+.taf-popup__note { font-size: 11px; color: #6b7280; }

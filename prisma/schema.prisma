@@ -1,0 +1,312 @@
+// TAF Fuel Finder — authoritative data model.
+// Runtime access is ONLY through our server (Prisma + pg adapter). RLS is enabled on every
+// table with no policies (see prisma/sql/enable_rls.sql) so Supabase's public API cannot read data.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  VIEWER
+  BRANCH_ADMIN
+  SUPER_ADMIN
+}
+
+enum FuelStatus {
+  AVAILABLE
+  LIMITED
+  OUT_OF_STOCK
+  UNKNOWN
+}
+
+enum StationStatus {
+  OPEN
+  CLOSED
+  TEMPORARILY_CLOSED
+  MAINTENANCE
+}
+
+enum NotificationType {
+  FUEL_AVAILABLE
+  FUEL_UNAVAILABLE
+  ANNOUNCEMENT
+  MAINTENANCE
+  SYSTEM
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  BLOCKED
+  SKIPPED
+}
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  telegramUserId  BigInt   @unique @map("telegram_user_id")
+  firstName       String   @map("first_name")
+  lastName        String?  @map("last_name")
+  username        String?
+  languageCode    String?  @map("language_code")
+  preferredLocale String   @default("en") @map("preferred_locale")
+  phone           String?
+  email           String?
+  role            Role     @default(CUSTOMER)
+  isActive        Boolean  @default(true) @map("is_active")
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  stationAdmin        StationAdmin?
+  subscriptions       NotificationSubscription[]
+  deliveries          NotificationDelivery[]
+  inAppNotifications  InAppNotification[]
+  activityLogs        ActivityLog[]
+  fuelStatusUpdates   StationFuelStatus[]
+  fuelStatusHistory   StationFuelStatusHistory[]
+  notificationsCreated Notification[]
+  loginCodes          LoginCode[]
+
+  @@index([role, isActive])
+  @@map("users")
+}
+
+model Station {
+  id            String        @id @default(uuid()) @db.Uuid
+  name          String
+  branchName    String        @map("branch_name")
+  address       String
+  city          String
+  area          String?
+  phone         String?
+  latitude      Float
+  longitude     Float
+  openingHours  Json          @map("opening_hours") // { "is24h": true } or { "mon": [["06:00","22:00"]], ... }
+  status        StationStatus @default(OPEN) @map("station_status")
+  services      String[]      @default([])
+  isActive      Boolean       @default(true) @map("is_active")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  admins        StationAdmin[]
+  fuelStatuses  StationFuelStatus[]
+  history       StationFuelStatusHistory[]
+  subscriptions NotificationSubscription[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+  analytics     AnalyticsEvent[]
+
+  @@index([city, area])
+  @@index([isActive, status])
+  @@index([latitude, longitude])
+  @@map("stations")
+}
+
+model FuelType {
+  id           String  @id @default(uuid()) @db.Uuid
+  slug         String  @unique
+  nameEn       String  @map("name_en")
+  nameAm       String  @map("name_am")
+  icon         String  @default("⛽")
+  isActive     Boolean @default(true) @map("is_active")
+  displayOrder Int     @default(0) @map("display_order")
+
+  statuses      StationFuelStatus[]
+  history       StationFuelStatusHistory[]
+  subscriptions NotificationSubscription[]
+  notifications Notification[]
+  analytics     AnalyticsEvent[]
+
+  @@index([isActive, displayOrder])
+  @@map("fuel_types")
+}
+
+model StationFuelStatus {
+  id              String     @id @default(uuid()) @db.Uuid
+  stationId       String     @map("station_id") @db.Uuid
+  fuelTypeId      String     @map("fuel_type_id") @db.Uuid
+  status          FuelStatus @default(UNKNOWN)
+  note            String?
+  lastUpdated     DateTime   @default(now()) @map("last_updated")
+  lastConfirmedAt DateTime   @default(now()) @map("last_confirmed_at")
+  updatedById     String?    @map("updated_by") @db.Uuid
+
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  fuelType  FuelType @relation(fields: [fuelTypeId], references: [id], onDelete: Cascade)
+  updatedBy User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([stationId, fuelTypeId])
+  @@index([fuelTypeId, status])
+  @@map("station_fuel_status")
+}
+
+model StationFuelStatusHistory {
+  id          String     @id @default(uuid()) @db.Uuid
+  stationId   String     @map("station_id") @db.Uuid
+  fuelTypeId  String     @map("fuel_type_id") @db.Uuid
+  oldStatus   FuelStatus @map("old_status")
+  newStatus   FuelStatus @map("new_status")
+  changedById String?    @map("changed_by") @db.Uuid
+  changedAt   DateTime   @default(now()) @map("changed_at")
+
+  station   Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  fuelType  FuelType @relation(fields: [fuelTypeId], references: [id], onDelete: Cascade)
+  changedBy User?    @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([stationId, fuelTypeId, changedAt])
+  @@map("station_fuel_status_history")
+}
+
+model StationAdmin {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @unique @map("user_id") @db.Uuid
+  stationId String @map("station_id") @db.Uuid
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station Station @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId])
+  @@map("station_admins")
+}
+
+model Notification {
+  id          String           @id @default(uuid()) @db.Uuid
+  type        NotificationType
+  titleEn     String           @map("title_en")
+  titleAm     String           @map("title_am")
+  bodyEn      String           @map("body_en")
+  bodyAm      String           @map("body_am")
+  stationId   String?          @map("station_id") @db.Uuid
+  fuelTypeId  String?          @map("fuel_type_id") @db.Uuid
+  audience    Json             @default("{}")
+  scheduledAt DateTime?        @map("scheduled_at")
+  createdById String?          @map("created_by") @db.Uuid
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  station    Station?  @relation(fields: [stationId], references: [id], onDelete: SetNull)
+  fuelType   FuelType? @relation(fields: [fuelTypeId], references: [id], onDelete: SetNull)
+  createdBy  User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  deliveries NotificationDelivery[]
+  inApp      InAppNotification[]
+
+  @@index([createdAt])
+  @@index([scheduledAt])
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id             String         @id @default(uuid()) @db.Uuid
+  notificationId String         @map("notification_id") @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  status         DeliveryStatus @default(PENDING)
+  attempts       Int            @default(0)
+  error          String?
+  nextAttemptAt  DateTime       @default(now()) @map("next_attempt_at")
+  sentAt         DateTime?      @map("sent_at")
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([status, nextAttemptAt])
+  @@map("notification_deliveries")
+}
+
+model NotificationSubscription {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  stationId  String   @map("station_id") @db.Uuid
+  fuelTypeId String   @map("fuel_type_id") @db.Uuid
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  station  Station  @relation(fields: [stationId], references: [id], onDelete: Cascade)
+  fuelType FuelType @relation(fields: [fuelTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stationId, fuelTypeId])
+  @@index([stationId, fuelTypeId, isActive])
+  @@map("notification_subscriptions")
+}
+
+model InAppNotification {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  notificationId String    @map("notification_id") @db.Uuid
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationId])
+  @@index([userId, readAt])
+  @@map("in_app_notifications")
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @map("actor_user_id") @db.Uuid
+  stationId   String?  @map("station_id") @db.Uuid
+  action      String
+  entity      String
+  oldValue    Json?    @map("old_value")
+  newValue    Json?    @map("new_value")
+  ip          String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  actor   User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  station Station? @relation(fields: [stationId], references: [id], onDelete: SetNull)
+
+  @@index([stationId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+  @@map("activity_logs")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+model AnalyticsEvent {
+  id           String   @id @default(uuid()) @db.Uuid
+  event        String   // station_view | nearby_search | fuel_search | app_open
+  stationId    String?  @map("station_id") @db.Uuid
+  fuelTypeId   String?  @map("fuel_type_id") @db.Uuid
+  anonUserHash String?  @map("anon_user_hash") // salted hash. NEVER coordinates or raw location.
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  station  Station?  @relation(fields: [stationId], references: [id], onDelete: SetNull)
+  fuelType FuelType? @relation(fields: [fuelTypeId], references: [id], onDelete: SetNull)
+
+  @@index([event, createdAt])
+  @@index([stationId, createdAt])
+  @@map("analytics_events")
+}
+
+// One-time login codes for the web admin (sent by the bot). Only a keyed hash is stored.
+model LoginCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  attempts   Int       @default(0)
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("login_codes")
+}

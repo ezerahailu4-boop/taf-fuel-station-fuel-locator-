@@ -1,0 +1,218 @@
+{
+  "app": {
+    "name": "TAF የነዳጅ መፈለጊያ",
+    "tagline": "በአቅራቢያዎ ያለ የነዳጅ አቅርቦት ይፈልጉ።",
+    "disclaimer": "የተገለጸ የነዳጅ አቅርቦት ነው። የነዳጅ አቅርቦት በማንኛውም ጊዜ ሊቀየር ይችላል።"
+  },
+  "fuel": {
+    "status": {
+      "AVAILABLE": "ነዳጅ አለ",
+      "LIMITED": "ውሱን ነዳጅ አለ",
+      "OUT_OF_STOCK": "ነዳጅ የለም",
+      "UNKNOWN": "አይታወቅም"
+    },
+    "stale": "መረጃው ጊዜው ያለፈበት ሊሆን ይችላል"
+  },
+  "station": {
+    "status": {
+      "OPEN": "ክፍት",
+      "CLOSED": "ዝግ",
+      "TEMPORARILY_CLOSED": "ለጊዜው ዝግ",
+      "MAINTENANCE": "በጥገና ላይ"
+    },
+    "viewOnMap": "በካርታ እይ",
+    "directions": "አቅጣጫ ያግኙ",
+    "moreApps": "ሌሎች የካርታ መተግበሪያዎች",
+    "details": "የማደያ ዝርዝር",
+    "away": "{distance} ይርቃል",
+    "call": "ደውል",
+    "hours": "የስራ ሰዓት",
+    "open24": "24 ሰዓት ክፍት",
+    "closedToday": "ዛሬ ዝግ",
+    "hoursUnknown": "የስራ ሰዓት አልተገለጸም",
+    "services": "አገልግሎቶች",
+    "availability": "አሁን ያለው አቅርቦት",
+    "address": "አድራሻ",
+    "phone": "ስልክ",
+    "notFound": "ይህን ማደያ ማግኘት አልቻልንም።",
+    "back": "ወደ ማደያዎች ተመለስ",
+    "backLabel": "ተመለስ"
+  },
+  "errors": {
+    "location": "📍 አካባቢዎን ማግኘት አልቻልንም። በምትኩ አካባቢ ይፈልጉ።",
+    "noStations": "በአቅራቢያ ምንም የTAF ነዳጅ ማደያ አልተገኘም።",
+    "noFuel": "በአሁኑ ጊዜ በአቅራቢያ የተመረጠው ነዳጅ እንዳለ አልተዘገበም።",
+    "server": "ችግር ተፈጥሯል። እባክዎ እንደገና ይሞክሩ።",
+    "network": "የግንኙነት ችግር። እባክዎ የበይነመረብ ግንኙነትዎን ያረጋግጡ።"
+  },
+  "common": {
+    "loading": "በመጫን ላይ…",
+    "save": "ለውጦችን አስቀምጥ",
+    "cancel": "ተወው",
+    "confirm": "አረጋግጥ",
+    "retry": "እንደገና ሞክር",
+    "logout": "ውጣ",
+    "language": "ቋንቋ",
+    "readOnly": "የማየት ፈቃድ ብቻ አለዎት።",
+    "lastUpdated": "መጨረሻ የተዘመነው",
+    "notReported": "እስካሁን አልተዘገበም",
+    "close": "ዝጋ"
+  },
+  "time": {
+    "justNow": "አሁን",
+    "minutesAgo": "ከ{count} ደቂቃ በፊት",
+    "hoursAgo": "ከ{count} ሰዓት በፊት",
+    "daysAgo": "ከ{count} ቀን በፊት"
+  },
+  "login": {
+    "title": "የአስተዳዳሪ መግቢያ",
+    "intro": "የቴሌግራም መታወቂያዎን ያስገቡ። በTAF ቦት አንድ ጊዜ የሚያገለግል ኮድ እንልክልዎታለን።",
+    "telegramId": "የቴሌግራም መታወቂያ",
+    "sendCode": "ኮድ ላክ",
+    "code": "ባለ6 አኃዝ ኮድ",
+    "verify": "ግባ",
+    "codeSent": "ይህ መታወቂያ የአስተዳዳሪ ከሆነ ኮድ በቴሌግራም ተልኳል። ቦቱን ተጠቅመው የማያውቁ ከሆነ መጀመሪያ /start ይላኩ።",
+    "invalid": "ኮዱ ትክክል አይደለም ወይም ጊዜው አልፏል።",
+    "notInTelegram": "ቴሌግራም አይጠቀሙም? በኮድ ይግቡ።"
+  },
+  "branch": {
+    "title": "የቅርንጫፍ የነዳጅ አቅርቦት",
+    "station": "ማደያ",
+    "stationStatus": "የማደያ ሁኔታ",
+    "fuel": "ነዳጅ",
+    "stillAccurate": "አሁንም ትክክል ነው ✓",
+    "stillAccurateHint": "ምንም አልተቀየረም? መረጃው ወቅታዊ መሆኑን ያረጋግጡ።",
+    "confirmedToast": "አመሰግናለሁ! ወቅታዊ ሆኖ ተመዝግቧል።",
+    "savedToast": "ተቀምጧል። ደንበኞች አሁን ማዘመኛውን ማየት ይችላሉ።",
+    "nothingChanged": "የሚቀመጥ ለውጥ የለም።",
+    "reviewTitle": "ለውጦችን ይመልከቱ",
+    "reviewIntro": "እነዚህ ማዘመኛዎች ወዲያውኑ ለደንበኞች ይታያሉ፦",
+    "history": "የቅርብ ጊዜ እንቅስቃሴ",
+    "noHistory": "እስካሁን ምንም እንቅስቃሴ የለም።",
+    "pickStation": "ማደያ ይምረጡ",
+    "noStation": "ለመለያዎ ምንም ማደያ አልተመደበም። ሱፐር አድሚንን ይጠይቁ።",
+    "unsaved": "ያልተቀመጡ ለውጦች አሉ",
+    "by": "በ{name}",
+    "fuelOptions": {
+      "AVAILABLE": "አለ",
+      "LIMITED": "ውሱን",
+      "OUT_OF_STOCK": "የለም"
+    },
+    "activity": {
+      "FUEL_STATUS_CHANGED": "{fuel}፦ {from} → {to}",
+      "FUEL_NOTE_CHANGED": "{fuel}፦ ማስታወሻ ተዘምኗል",
+      "STATION_STATUS_CHANGED": "ማደያ፦ {from} → {to}",
+      "AVAILABILITY_CONFIRMED": "አቅርቦቱ ወቅታዊ መሆኑ ተረጋግጧል",
+      "ACCESS_DENIED": "የታገደ የመግባት ሙከራ",
+      "other": "{action}"
+    }
+  },
+  "nav": {
+    "home": "መነሻ",
+    "map": "ካርታ",
+    "stations": "ማደያዎች",
+    "alerts": "ማሳወቂያ",
+    "profile": "መገለጫ"
+  },
+  "home": {
+    "cta": "በአቅራቢያዬ ያሉ ማደያዎችን ፈልግ",
+    "ctaHint": "የሚፈልጉት ነዳጅ ያላቸው ቅርብ ማደያዎች",
+    "searchPlaceholder": "ማደያ፣ አካባቢ፣ ከተማ ወይም አድራሻ ይፈልጉ",
+    "search": "ፈልግ",
+    "fuelTitle": "የትኛውን ነዳጅ ይፈልጋሉ?",
+    "anyFuel": "ማንኛውም ነዳጅ",
+    "findNearest": "ቅርብ {fuel} ፈልግ",
+    "recent": "በቅርቡ የተዘመኑ",
+    "viewAll": "ሁሉንም ማደያዎች እይ"
+  },
+  "location": {
+    "promptTitle": "አካባቢዎን እንጠቀም?",
+    "promptBody": "አካባቢዎን የምንጠቀመው በአቅራቢያዎ ያሉ የTAF ማደያዎችን ለማግኘት ብቻ ነው። በጭራሽ አይቀመጥም ወይም አይከታተልም።",
+    "allow": "አካባቢ ፍቀድ",
+    "tryAgain": "እንደገና ሞክር",
+    "asking": "አካባቢዎን በማግኘት ላይ…",
+    "manual": "ወይም በምትኩ አካባቢ ይፈልጉ",
+    "areaPlaceholder": "አካባቢ ይምረጡ",
+    "privacy": "አካባቢዎ በስልክዎ ላይ ብቻ ይቆያል፣ ለዚህ ፍለጋ ብቻ ይውላል።",
+    "usingGps": "አሁን ያሉበትን አካባቢ በመጠቀም ላይ",
+    "usingArea": "አካባቢ፦ {area}",
+    "change": "ቀይር"
+  },
+  "nearest": {
+    "title": "ቅርብ ነዳጅ",
+    "fuelLabel": "የነዳጅ ዓይነት",
+    "within": "በ{km} ኪ.ሜ ውስጥ",
+    "nearestAvailable": "ቅርብ {fuel} ያላቸው",
+    "notAvailable": "እንዳለ ያልተዘገበ",
+    "searching": "በአቅራቢያ በመፈለግ ላይ…",
+    "refresh": "አድስ"
+  },
+  "stations": {
+    "title": "ማደያዎች",
+    "searchPlaceholder": "ማደያዎችን ይፈልጉ",
+    "filters": "ማጣሪያዎች",
+    "hideFilters": "ማጣሪያዎችን ደብቅ",
+    "fuel": "የነዳጅ ዓይነት",
+    "availableOnly": "ይህ ነዳጅ ያላቸው ማደያዎች ብቻ",
+    "distance": "ርቀት",
+    "anyDistance": "ማንኛውም ርቀት",
+    "km": "{km} ኪ.ሜ",
+    "needLocation": "በርቀት ለማጣራት አካባቢን ያብሩ።",
+    "useMyLocation": "አካባቢዬን ተጠቀም",
+    "city": "ከተማ",
+    "area": "አካባቢ",
+    "all": "ሁሉም",
+    "openOnly": "ክፍት ማደያዎች ብቻ",
+    "clear": "ማጣሪያዎችን አጽዳ",
+    "results": "{count, plural, one {# ማደያ} other {# ማደያዎች}}"
+  },
+  "map": {
+    "title": "የማደያ ካርታ",
+    "viewDetails": "ዝርዝር እይ",
+    "unavailable": "ካርታውን መጫን አልተቻለም። አሁንም በዝርዝሩ ማደያዎችን ማየት ይችላሉ።",
+    "tone": {
+      "available": "ነዳጅ አለ",
+      "limited": "ውሱን ነዳጅ",
+      "out": "ነዳጅ የለም",
+      "unknown": "አቅርቦት አይታወቅም",
+      "closed": "ማደያው ክፍት አይደለም"
+    },
+    "legend": "የፒን ምልክቶች፦ ✓ አለ · ! ውሱን · ✕ የለም · ? አይታወቅም · − ክፍት አይደለም"
+  },
+  "alerts": {
+    "title": "ማሳወቂያዎች እና ማንቂያዎች",
+    "subtitle": "በተመረጡ ማደያዎች ነዳጅ ሲመጣ ፈጣን መልዕክት ያግኙ",
+    "subscriptionsTab": "ንቁ ማሳወቂያዎች",
+    "historyTab": "የማሳወቂያ ታሪክ",
+    "subscriptionsHint": "ነዳጅ መኖሩ እንደተዘገበ ወዲያውኑ የቴሌግራም መልዕክት ይደርስዎታል።",
+    "emptySubsTitle": "ምንም ንቁ የነዳጅ ማሳወቂያ የለም",
+    "emptySubsBody": "ማደያዎችን በመቃኘት በማንኛውም ነዳጅ ላይ የደውል ምልክቱን በመጫን ነዳጅ ሲመጣ ፈጣን የቴሌግራም መልዕክት ያግኙ።",
+    "emptyHistoryTitle": "እስካሁን ምንም ማሳወቂያ አልደረሰም",
+    "emptyHistoryBody": "በተመዘገቡባቸው ማደያዎች ነዳጅ መኖሩ ሲዘገብ ማሳወቂያዎች እዚህ ይታያሉ።",
+    "browseStations": "ማደያዎችን ይመልከቱ",
+    "viewStation": "ማደያውን ክፈት",
+    "remove": "አስወግድ",
+    "markAllRead": "ሁሉንም እንደተነበበ ምልክት አድርግ",
+    "notificationsTitle": "ማሳወቂያዎች",
+    "new": "አዲስ",
+    "noNotifications": "ምንም ማሳወቂያ የለም",
+    "noNotificationsHint": "በአሁኑ ሰዓት ምንም ማሳወቂያ አልደረሰዎትም።",
+    "manageAlertsLink": "ሁሉንም ማሳወቂያዎች አስተዳድር →",
+    "subscribe": "ማሳወቂያ አብራ",
+    "unsubscribe": "ማሳወቂያ አጥፋ",
+    "subscribed": "ማሳወቂያ በርቷል",
+    "notifyMe": "አሳውቀኝ"
+  },
+  "profile": {
+    "title": "መገለጫ",
+    "language": "ቋንቋ",
+    "about": "ስለ TAF የነዳጅ መፈለጊያ",
+    "aboutBody": "TAF የነዳጅ መፈለጊያ በTAF ማደያዎች የተዘገበውን የነዳጅ አቅርቦት ያሳያል። ሪፖርቶቹ ከማደያ ሰራተኞች የሚመጡ ሲሆን በማንኛውም ጊዜ ሊቀየሩ ይችላሉ።",
+    "privacy": "ግላዊነት",
+    "privacyBody": "አካባቢዎ የሚጠቀመው በስልክዎ ላይ ለአንድ የአቅራቢያ ፍለጋ ብቻ ነው። በጭራሽ አይቀመጥም ወይም አይከታተልም።"
+  },
+  "state": {
+    "offline": "ከመስመር ውጭ ነዎት። የተቀመጡ ማደያዎች እየታዩ ነው፦",
+    "refresh": "አድስ"
+  }
+}
