@@ -47,17 +47,23 @@ export function MapView({
         const provider = await loadMapProvider();
         if (cancelled || !host.current) return;
         controller = await provider.mount(host.current, { center: ADAMA_REST_STOP, zoom: 14 });
-        if (cancelled) return controller.destroy();
+        if (cancelled) {
+          controller.destroy();
+          return;
+        }
         ctrl.current = controller;
         setState("ready");
-      } catch {
+      } catch (err) {
+        console.error("[MapView] Map failed to load:", err);
         if (!cancelled) setState("error");
       }
     })();
     return () => {
       cancelled = true;
       ctrl.current = null;
-      controller?.destroy();
+      try {
+        controller?.destroy();
+      } catch {}
     };
   }, []);
 

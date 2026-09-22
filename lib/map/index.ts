@@ -1,15 +1,17 @@
 import type { MapProvider } from "./types";
 
 /**
- * Selects the map provider from NEXT_PUBLIC_MAP_PROVIDER (default "osm"). Loaded lazily so the map library
+ * Selects the map provider. Loaded lazily so the map library
  * is never part of the initial bundle.
- * To add Mapbox/Google: create lib/map/mapbox.ts exporting a MapProvider and add a case here.
+ * Falls back safely to Leaflet / OpenStreetMap in all cases.
  */
-export async function loadMapProvider(id: string = process.env.NEXT_PUBLIC_MAP_PROVIDER ?? "osm"): Promise<MapProvider> {
-  switch (id) {
+export async function loadMapProvider(id?: string): Promise<MapProvider> {
+  const provider = (id || process.env.NEXT_PUBLIC_MAP_PROVIDER || "osm").toLowerCase().trim();
+  switch (provider) {
     case "osm":
-      return (await import("./leaflet")).leafletProvider;
+    case "leaflet":
+    case "openstreetmap":
     default:
-      throw new Error(`Unknown map provider "${id}". Add it in lib/map/index.ts`);
+      return (await import("./leaflet")).leafletProvider;
   }
 }
