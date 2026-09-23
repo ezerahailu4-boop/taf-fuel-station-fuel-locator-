@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { apiFetch, type ApiOptions } from "@/lib/client/api";
+import { apiFetch, setAuthToken, type ApiOptions } from "@/lib/client/api";
 import type { PublicUser } from "@/types/auth";
 import "@/types/telegram";
 
@@ -30,7 +30,6 @@ export function useAuth(): AuthContextValue {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: "loading" });
-  // The Mini App token is kept in memory only (never localStorage) to limit XSS exposure.
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
           if (cancelled) return;
           setToken(res.token);
+          setAuthToken(res.token);
           setState({ status: "authenticated", user: res.user });
           return;
         }
@@ -72,21 +72,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginWithPassword = useCallback(async (password: string) => {
-    const res = await apiFetch<{ user: PublicUser }>("/api/auth/password", {
+    const res = await apiFetch<{ user: PublicUser; token?: string }>("/api/auth/password", {
       method: "POST",
       body: { password },
     });
+    if (res.token) {
+      setToken(res.token);
+      setAuthToken(res.token);
+    }
     setState({ status: "authenticated", user: res.user });
   }, []);
 
   const loginWithCode = useCallback(async (telegramId: string, code: string) => {
-    const res = await apiFetch<{ user: PublicUser }>("/api/auth/otp/verify", { method: "POST", body: { telegramId, code } });
+    const res = await apiFetch<{ user: PublicUser; token?: string }>("/api/auth/otp/verify", {
+      method: "POST",
+      body: { telegramId, code },
+    });
+    if (res.token) {
+      setToken(res.token);
+      setAuthToken(res.token);
+    }
     setState({ status: "authenticated", user: res.user });
   }, []);
 
   const logout = useCallback(async () => {
     await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
     setToken(null);
+    setAuthToken(null);
     setState({ status: "anonymous", inTelegram: false });
   }, []);
 

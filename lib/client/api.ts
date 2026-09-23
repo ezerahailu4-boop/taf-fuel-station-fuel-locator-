@@ -23,18 +23,48 @@ export interface ApiOptions {
   signal?: AbortSignal;
 }
 
+let memoryAuthToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  memoryAuthToken = token;
+  if (typeof window !== "undefined") {
+    try {
+      if (token) {
+        localStorage.setItem("taf_auth_token", token);
+      } else {
+        localStorage.removeItem("taf_auth_token");
+      }
+    } catch {}
+  }
+}
+
+export function getAuthToken(): string | null {
+  if (memoryAuthToken) return memoryAuthToken;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem("taf_auth_token");
+      if (stored) {
+        memoryAuthToken = stored;
+        return stored;
+      }
+    } catch {}
+  }
+  return null;
+}
+
 /**
  * Same-origin fetch. Mini App calls send `Authorization: Bearer <token>`; the web admin relies on the
- * httpOnly session cookie (sent automatically). Errors are normalised to ApiClientError / NetworkError.
+ * httpOnly session cookie (sent automatically) and/or the stored Bearer token. Errors are normalised to ApiClientError / NetworkError.
  */
 export async function apiFetch<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   let res: Response;
+  const token = opts.token !== undefined ? opts.token : getAuthToken();
   try {
     res = await fetch(path, {
       method: opts.method ?? "GET",
       headers: {
         ...(opts.body !== undefined ? { "Content-Type": "application/json" } : {}),
-        ...(opts.token ? { Authorization: `Bearer ${opts.token}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
       credentials: "same-origin",

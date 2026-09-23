@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { apiFetch } from "@/lib/client/api";
 import { RelativeTime } from "@/components/ui/RelativeTime";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -39,9 +40,7 @@ export function UsersManager() {
       if (search.trim()) params.set("search", search.trim());
       if (roleFilter !== "ALL") params.set("role", roleFilter);
 
-      const res = await fetch(`/api/admin/users?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch users");
-      const data = await res.json();
+      const data = await apiFetch<{ users: BotUserItem[]; total: number }>(`/api/admin/users?${params.toString()}`);
       setUsers(data.users || []);
       setTotal(data.total || 0);
     } catch (err) {

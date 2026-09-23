@@ -6,6 +6,7 @@ import Link from "next/link";
 import { apiFetch } from "@/lib/client/api";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { StationStatusBadge } from "@/components/ui/StatusBadge";
 import { RelativeTime } from "@/components/ui/RelativeTime";
@@ -75,7 +76,7 @@ export interface OverviewData {
 export type TabId = "overview" | "users" | "stations" | "fuels" | "settings" | "analytics" | "audit";
 
 export function AdminDashboard({ user }: { user: PublicUser }) {
-  const { logout } = useAuth();
+  const { api, logout } = useAuth();
   const [tab, setTab] = useState<TabId>("overview");
   const [data, setData] = useState<OverviewData | null>(null);
   const [fuelTypes, setFuelTypes] = useState<FuelTypeItem[]>([]);
@@ -88,16 +89,18 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
       setLoading(true);
       setFetchError(null);
       const [overviewRes, fuelTypesRes, settingsRes] = await Promise.allSettled([
-        apiFetch<OverviewData>("/api/admin/overview"),
-        apiFetch<{ items?: FuelTypeItem[] } | FuelTypeItem[]>("/api/fuel-types?all=1"),
-        apiFetch<{ settings: Record<string, unknown> }>("/api/admin/settings"),
+        api<OverviewData>("/api/admin/overview"),
+        api<{ items?: FuelTypeItem[] } | FuelTypeItem[]>("/api/fuel-types?all=1"),
+        api<{ settings: Record<string, unknown> }>("/api/admin/settings"),
       ]);
 
       if (overviewRes.status === "fulfilled") {
         setData(overviewRes.value);
       } else {
         console.error("[admin-dashboard] Error loading overview:", overviewRes.reason);
-        setFetchError("Unable to load overview metrics. Please retry or check your admin access.");
+        const reason = overviewRes.reason;
+        const msg = reason instanceof Error ? reason.message : "Unable to load overview metrics.";
+        setFetchError(`${msg} Please retry or check your admin access.`);
       }
 
       if (fuelTypesRes.status === "fulfilled") {
@@ -232,6 +235,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
             </button>
 
             <LocaleSwitcher />
+            <ThemeToggle />
 
             <button
               type="button"
@@ -343,7 +347,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                   </div>
                 </div>
 
-                {/* KPI Metrics Cards (shadcn Style) */}
+                {/* KPI Metrics Cards (Vibrant Brand Style) */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
                   {/* Bot Users */}
                   <Card
@@ -351,116 +355,116 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                     tabIndex={0}
                     onClick={() => setTab("users")}
                     onKeyDown={(e) => e.key === "Enter" && setTab("users")}
-                    className="cursor-pointer hover:border-brand-orange/60 hover:shadow-md transition group"
+                    className="cursor-pointer border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-transparent hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all group"
                   >
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 group-hover:text-brand-orange transition">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 group-hover:text-brand-orange transition">
                           Bot Users
                         </span>
-                        <div className="p-1.5 rounded-lg bg-orange-500/10 text-brand-orange">
+                        <div className="p-1.5 rounded-lg bg-amber-500/20 text-brand-orange shadow-xs">
                           <UsersIcon className="w-4 h-4" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-brand-orange">
+                      <div className="text-3xl font-black text-amber-600 dark:text-amber-400">
                         {data.stats.subscribers.totalUsers}
                       </div>
-                      <div className="mt-1 flex items-center gap-1 text-[11px] text-neutral-500">
+                      <div className="mt-1 flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                         {data.stats.subscribers.newToday ? (
                           <span className="font-bold text-emerald-600 dark:text-emerald-400">
                             +{data.stats.subscribers.newToday} today ·{" "}
                           </span>
                         ) : null}
-                        <span>View directory →</span>
+                        <span className="group-hover:translate-x-0.5 transition-transform inline-block">View directory →</span>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Active Stations */}
-                  <Card>
+                  <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-card to-transparent hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                           Active Stations
                         </span>
-                        <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                        <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-xs">
                           <GasStationIcon className="w-4 h-4" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+                      <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
                         {data.stats.stations.active}
                       </div>
-                      <div className="mt-1 text-[11px] text-neutral-500">
+                      <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                         {data.stats.stations.open} open · {data.stats.stations.total} total
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Fuel Types */}
-                  <Card>
+                  <Card className="border-blue-500/30 bg-gradient-to-br from-blue-500/10 via-card to-transparent hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/10 transition-all">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400">
                           Fuel Types
                         </span>
-                        <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600">
+                        <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-600 dark:text-blue-400 shadow-xs">
                           <TagIcon className="w-4 h-4" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+                      <div className="text-3xl font-black text-blue-600 dark:text-blue-400">
                         {data.stats.fuelTypes.active}
                       </div>
-                      <div className="mt-1 text-[11px] text-neutral-500">
+                      <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                         Benzine & Diesel active
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Alert Watches */}
-                  <Card>
+                  <Card className="border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-card to-transparent hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/10 transition-all">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-orange-700 dark:text-orange-400">
                           Alert Watches
                         </span>
-                        <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+                        <div className="p-1.5 rounded-lg bg-orange-500/20 text-orange-600 dark:text-orange-400 shadow-xs">
                           <BellIcon className="w-4 h-4" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+                      <div className="text-3xl font-black text-orange-600 dark:text-orange-400">
                         {data.stats.subscribers.activeSubscriptions}
                       </div>
-                      <div className="mt-1 text-[11px] text-neutral-500">
+                      <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                         Active station watch alerts
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Delivered Alerts */}
-                  <Card>
+                  <Card className="border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-card to-transparent hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/10 transition-all col-span-2 lg:col-span-1">
                     <CardHeader className="p-4 pb-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400">
                           Delivered Alerts
                         </span>
-                        <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
+                        <div className="p-1.5 rounded-lg bg-purple-500/20 text-purple-600 dark:text-purple-400 shadow-xs">
                           <MailIcon className="w-4 h-4" />
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-neutral-900 dark:text-neutral-100">
+                      <div className="text-3xl font-black text-purple-600 dark:text-purple-400">
                         {data.stats.notifications.sent}
                       </div>
-                      <div className="mt-1 text-[11px] text-neutral-500">
+                      <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
                         {data.stats.notifications.pending} pending in queue
                       </div>
                     </CardContent>
