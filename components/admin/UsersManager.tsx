@@ -154,7 +154,74 @@ export function UsersManager() {
         </Card>
       ) : (
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile Card List (sm:hidden) */}
+          <div className="sm:hidden divide-y" style={{ borderColor: "var(--border)" }}>
+            {users.map((u) => {
+              const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ") || "User";
+              const initials = (u.firstName?.[0] || "U") + (u.lastName?.[0] || "");
+              return (
+                <div key={u.id} className="p-4 space-y-3 hover:bg-neutral-500/5 transition">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 rounded-full bg-brand-orange/15 text-brand-orange font-black flex items-center justify-center text-xs shrink-0 ring-1 ring-brand-orange/20">
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
+                          {fullName}
+                        </div>
+                        <div className="text-xs text-neutral-400 truncate">
+                          {u.username ? `@${u.username}` : "No username"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Badge
+                      variant={
+                        u.role === "SUPER_ADMIN"
+                          ? "brand"
+                          : u.role === "BRANCH_ADMIN"
+                          ? "warning"
+                          : "secondary"
+                      }
+                      className="shrink-0"
+                    >
+                      {u.role === "SUPER_ADMIN" && <ShieldCheckIcon className="w-3 h-3" />}
+                      <span>{u.role}</span>
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-neutral-500/10 text-xs">
+                    <div className="flex items-center gap-2">
+                      <code className="rounded-md bg-neutral-100 dark:bg-neutral-800 px-2 py-0.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-300">
+                        ID: {u.telegramUserId}
+                      </code>
+                      {u.activeAlerts > 0 && (
+                        <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 text-[11px]">
+                          <BellIcon className="w-3 h-3 text-emerald-500" />
+                          <span>{u.activeAlerts} alerts</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="text-[11px] text-neutral-400">
+                      {u.lastLoginAt ? (
+                        <span className="inline-flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <RelativeTime value={u.lastLoginAt} />
+                        </span>
+                      ) : (
+                        <span>Joined <RelativeTime value={u.createdAt} /></span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View (hidden sm:block) */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr
