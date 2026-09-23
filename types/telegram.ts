@@ -14,6 +14,8 @@ export interface TelegramWebApp {
   colorScheme?: "light" | "dark";
   ready(): void;
   expand(): void;
+  setHeaderColor?(color: string): void;
+  setBackgroundColor?(color: string): void;
   openLink?(url: string, opts?: { try_instant_view?: boolean }): void;
   onEvent?(event: string, cb: () => void): void;
   offEvent?(event: string, cb: () => void): void;
@@ -21,6 +23,19 @@ export interface TelegramWebApp {
 }
 
 declare global {
+  interface TelegramWebApp {
+    initData: string;
+    colorScheme?: "light" | "dark";
+    ready(): void;
+    expand(): void;
+    setHeaderColor?(color: string): void;
+    setBackgroundColor?(color: string): void;
+    openLink?(url: string, opts?: { try_instant_view?: boolean }): void;
+    onEvent?(event: string, cb: () => void): void;
+    offEvent?(event: string, cb: () => void): void;
+    LocationManager?: TelegramLocationManager;
+  }
+
   interface Window {
     Telegram?: { WebApp?: TelegramWebApp };
   }

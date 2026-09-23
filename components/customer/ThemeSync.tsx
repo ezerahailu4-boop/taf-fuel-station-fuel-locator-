@@ -1,17 +1,25 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import "@/types/telegram";
 
-/** Follows Telegram's light/dark scheme inside the Mini App; on the web the CSS prefers-color-scheme rule applies. */
+/** Syncs the user's selected White/Black theme with Telegram WebApp native title bar & background. */
 export function ThemeSync() {
+  const { theme } = useTheme();
+
   useEffect(() => {
-    const tg = window.Telegram?.WebApp;
-    if (!tg?.colorScheme) return;
-    const apply = () => document.documentElement.setAttribute("data-theme", tg.colorScheme === "dark" ? "dark" : "light");
-    apply();
-    tg.onEvent?.("themeChanged", apply);
-    return () => tg.offEvent?.("themeChanged", apply);
-  }, []);
+    const tg = typeof window !== "undefined" ? (window.Telegram?.WebApp as any) : undefined;
+    if (!tg) return;
+
+    if (theme === "dark") {
+      tg.setHeaderColor?.("#171a21");
+      tg.setBackgroundColor?.("#0f1115");
+    } else {
+      tg.setHeaderColor?.("#ffffff");
+      tg.setBackgroundColor?.("#fafafa");
+    }
+  }, [theme]);
+
   return null;
 }

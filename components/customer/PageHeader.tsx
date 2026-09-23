@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher";
 
 import { NotificationCenter } from "@/components/customer/NotificationCenter";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function PageHeader({ title, subtitle, back }: { title: string; subtitle?: string; back?: { href: string; label: string } }) {
   return (
@@ -24,7 +25,8 @@ export function PageHeader({ title, subtitle, back }: { title: string; subtitle?
           {subtitle && <p className="truncate text-sm" style={{ color: "var(--muted)" }}>{subtitle}</p>}
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 shrink-0">
+        <ThemeToggle />
         <NotificationCenter />
         <LocaleSwitcher />
       </div>
