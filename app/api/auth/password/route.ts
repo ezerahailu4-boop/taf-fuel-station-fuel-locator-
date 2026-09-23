@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { getEnv } from "@/lib/env";
 import { getDb } from "@/lib/db";
 import { cookieLoginResponse } from "@/lib/api/authResponse";
 import { getClientIp, handle, readJson } from "@/lib/api/handler";
@@ -64,8 +65,9 @@ export const POST = handle(async (req) => {
     });
   }
 
-  const secret = process.env.SESSION_SECRET || "default-session-secret-at-least-32-chars-long";
-  const ttlSeconds = 60 * 60 * 24 * 7; // 7 days session
+  const env = getEnv();
+  const secret = env.SESSION_SECRET;
+  const ttlSeconds = env.SESSION_TTL_SECONDS || 60 * 60 * 24 * 7; // default 7 days session
   const token = await signSession(user.id, secret, ttlSeconds);
 
   const publicUser: PublicUser = {
