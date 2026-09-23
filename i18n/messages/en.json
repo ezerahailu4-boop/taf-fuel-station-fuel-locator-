@@ -207,6 +207,7 @@
     "title": "Profile",
     "language": "Language",
     "theme": "Appearance (Theme)",
+    "themeDesc": "Switch between White, Black, and official TAF Logo theme.",
     "about": "About TAF Fuel Finder",
     "aboutBody": "TAF Fuel Finder shows the fuel availability reported by TAF stations. Reports come from station staff and can change at any time.",
     "privacy": "Privacy",

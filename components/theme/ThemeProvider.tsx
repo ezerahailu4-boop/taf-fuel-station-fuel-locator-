@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import "@/types/telegram";
 
-export type Theme = "light" | "dark";
+export type Theme = "light" | "dark" | "taf";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
     try {
       const stored = localStorage.getItem("taf_theme");
-      if (stored === "dark" || stored === "light") {
+      if (stored === "dark" || stored === "light" || stored === "taf") {
         setThemeState(stored);
         applyTheme(stored);
       } else {
@@ -38,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   function applyTheme(next: Theme) {
     document.documentElement.setAttribute("data-theme", next);
-    if (next === "dark") {
+    if (next === "dark" || next === "taf") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
@@ -47,7 +47,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Sync Telegram WebApp native title bar & background colors
     const tg = typeof window !== "undefined" ? (window.Telegram?.WebApp as any) : undefined;
     if (tg) {
-      if (next === "dark") {
+      if (next === "taf") {
+        tg.setHeaderColor?.("#1e1812");
+        tg.setBackgroundColor?.("#14110e");
+      } else if (next === "dark") {
         tg.setHeaderColor?.("#171a21");
         tg.setBackgroundColor?.("#0f1115");
       } else {
@@ -66,11 +69,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   function toggleTheme() {
-    setTheme(theme === "light" ? "dark" : "light");
+    const next: Theme = theme === "light" ? "dark" : theme === "dark" ? "taf" : "light";
+    setTheme(next);
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, isDark: theme === "dark" }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, isDark: theme === "dark" || theme === "taf" }}>
       {children}
     </ThemeContext.Provider>
   );

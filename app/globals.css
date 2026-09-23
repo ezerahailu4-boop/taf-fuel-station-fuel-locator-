@@ -37,6 +37,19 @@ html.dark {
   --border: #262b36;
 }
 
+:root[data-theme="taf"],
+html[data-theme="taf"] {
+  --bg: #14110e;
+  --surface: #1e1812;
+  --text: #fff8f0;
+  --muted: #cbb094;
+  --border: #3d2c1e;
+}
+
+html[data-theme="taf"] .ring-black\/5 {
+  --tw-ring-color: rgba(243, 156, 52, 0.2);
+}
+
 html,
 body {
   height: 100%;

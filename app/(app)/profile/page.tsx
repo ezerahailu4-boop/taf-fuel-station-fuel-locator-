@@ -13,13 +13,13 @@ export default function ProfilePage() {
     <main className="space-y-4">
       <PageHeader title={t("title")} />
 
-      {/* Theme: White or Black */}
+      {/* Theme: White, Black, or TAF Logo */}
       <section className={card} style={{ background: "var(--surface)" }}>
         <div className="space-y-3">
           <div>
             <h2 className="font-bold">🌓 {t("theme")}</h2>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-              Switch between White (Light) and Black (Dark) interface themes.
+              {t("themeDesc")}
             </p>
           </div>
           <ThemeSelector />
