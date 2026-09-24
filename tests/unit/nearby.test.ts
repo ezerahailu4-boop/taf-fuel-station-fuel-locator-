@@ -105,6 +105,14 @@ describe("findNearby (service)", () => {
     expect((await findNearby(deps(), { lat: ORIGIN.lat, lng: ORIGIN.lng, limit: 20 })).radiusKm).toBe(10);
   });
 
+  it("auto-expands search radius when no stations exist within initial radius", async () => {
+    // 35km away from any station in rows
+    const farOrigin = { lat: 8.65, lng: 38.75 };
+    const r = await findNearby(deps(), { lat: farOrigin.lat, lng: farOrigin.lng, limit: 20, fuel: "diesel" });
+    expect(r.items.length).toBeGreaterThan(0);
+    expect(r.radiusKm).toBeGreaterThan(10);
+  });
+
   it("respects limit and rejects unknown fuel types (400)", async () => {
     expect((await findNearby(deps(), { lat: ORIGIN.lat, lng: ORIGIN.lng, radiusKm: 50, limit: 2 })).items).toHaveLength(2);
     await expect(findNearby(deps(), { lat: ORIGIN.lat, lng: ORIGIN.lng, limit: 20, fuel: "unobtainium" })).rejects.toMatchObject({ status: 400 });

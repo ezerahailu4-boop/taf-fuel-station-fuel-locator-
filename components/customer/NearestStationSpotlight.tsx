@@ -96,35 +96,43 @@ export function NearestStationSpotlight() {
       </div>
 
       {/* Live Fuels Grid */}
-      <div className="relative z-10 mt-4 grid grid-cols-2 gap-2">
+      <div className="relative z-10 mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {nearest.fuels.map((fuel) => {
           const isAvail = fuel.status === "AVAILABLE";
           const isLimited = fuel.status === "LIMITED";
+          const statusText = isAvail
+            ? (locale === "am" ? "ነዳጅ አለ" : "Available")
+            : isLimited
+              ? (locale === "am" ? "ውስን ነዳጅ" : "Limited")
+              : (locale === "am" ? "ነዳጅ የለም" : "Not Available");
+
           return (
             <div
               key={fuel.fuelTypeId}
-              className={`flex items-center justify-between rounded-2xl border px-3 py-2.5 transition-all ${
+              className={`flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 transition-all ${
                 isAvail
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-200"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100"
                   : isLimited
-                    ? "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-200"
-                    : "border-red-500/20 bg-red-500/5 text-neutral-500"
+                    ? "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-100"
+                    : "border-red-500/30 bg-red-500/10 text-red-950 dark:text-red-200"
               }`}
             >
-              <div className="flex items-center gap-1.5">
-                <span className="text-base">{fuel.icon || "⛽"}</span>
-                <span className="text-sm font-bold">{locale === "am" ? fuel.nameAm : fuel.nameEn}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-base shrink-0">{fuel.icon || "⛽"}</span>
+                <span className="text-sm font-bold truncate">
+                  {locale === "am" ? fuel.nameAm : fuel.nameEn}
+                </span>
               </div>
               <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-extrabold tracking-wide uppercase ${
+                className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide uppercase shadow-xs whitespace-nowrap ${
                   isAvail
                     ? "bg-emerald-600 text-white"
                     : isLimited
-                      ? "bg-amber-500 text-neutral-900"
-                      : "bg-neutral-200 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300"
+                      ? "bg-amber-500 text-neutral-950"
+                      : "bg-red-600 text-white"
                 }`}
               >
-                {isAvail ? "Available" : isLimited ? "Limited" : "Out"}
+                {statusText}
               </span>
             </div>
           );

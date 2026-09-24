@@ -42,14 +42,14 @@ export async function handleStationsCommand(
   for (const s of stations) {
     text += `📍 **TAF ${s.branchName}** (${s.area ? `${s.area}, ` : ""}${s.city})\n`;
     const fuelsSummary = s.fuels
-      .map((f) => `${statusSymbol(f.status)} ${f.nameEn}: ${f.status === "AVAILABLE" ? (isAmharic ? "አለ" : "Avail") : f.status === "LIMITED" ? (isAmharic ? "ውስን" : "Ltd") : (isAmharic ? "የለም" : "Out")}`)
+      .map((f) => `${statusSymbol(f.status)} ${f.nameEn}: ${f.status === "AVAILABLE" ? (isAmharic ? "አለ" : "Avail") : f.status === "LIMITED" ? (isAmharic ? "ውስን" : "Ltd") : (isAmharic ? "የለም" : "Not Avail")}`)
       .join(" · ");
     text += `${fuelsSummary || (isAmharic ? "መረጃ የለም" : "No reports")}\n\n`;
   }
 
   text += isAmharic
     ? "🟢 አለ  🟡 ውስን  🔴 የለም\n*የተሟላ መረጃ እና አቅጣጫዎችን በመተግበሪያው ይመልከቱ*"
-    : "🟢 Available  🟡 Limited  🔴 Out of Stock\n*Open the Mini App for full details and directions*";
+    : "🟢 Available  🟡 Limited  🔴 Not Available\n*Open the Mini App for full details and directions*";
 
   const replyMarkup: TelegramInlineKeyboardMarkup = {
     inline_keyboard: [

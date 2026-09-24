@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FuelChips } from "@/components/customer/FuelChips";
 import { LocationPrompt } from "@/components/customer/LocationPrompt";
 import { PageHeader } from "@/components/customer/PageHeader";
@@ -10,6 +10,7 @@ import { useStations } from "@/components/customer/StationsProvider";
 import { EmptyState, ErrorState, OfflineBanner, SafetyNote, StationListSkeleton } from "@/components/customer/StateViews";
 import { ApiClientError, apiFetch, NetworkError } from "@/lib/client/api";
 import { trackEvent } from "@/lib/client/analytics";
+import { rankNearby } from "@/lib/geo/nearby";
 import type { NearbyResponse } from "@/services/nearbyService";
 
 type Search = { status: "idle" } | { status: "loading" } | { status: "error"; kind: "network" | "server" } | { status: "done"; data: NearbyResponse };
@@ -20,7 +21,7 @@ export default function NearestPage() {
   const tHome = useTranslations("home");
   const tErr = useTranslations("errors");
   const locale = useLocale();
-  const { fuelTypes, selectedFuel, setSelectedFuel, location, clearLocation } = useStations();
+  const { fuelTypes, selectedFuel, setSelectedFuel, location, clearLocation, stations } = useStations();
   const [search, setSearch] = useState<Search>({ status: "idle" });
   const [nonce, setNonce] = useState(0);
 
@@ -48,8 +49,16 @@ export default function NearestPage() {
   const fuelRow = fuelTypes.find((f) => f.slug === fuel);
   const fuelLabel = fuelRow ? (locale === "am" ? fuelRow.nameAm : fuelRow.nameEn) : "";
 
-  const available = search.status === "done" ? search.data.items.filter((i) => i.fuelMatch === "available") : [];
-  const others = search.status === "done" ? search.data.items.filter((i) => i.fuelMatch !== "available") : [];
+  // Combine server results with client stations fallback so nearest station is always shown
+  const serverItems = search.status === "done" ? search.data.items : [];
+  const clientFallback = useMemo(() => {
+    if (!location || stations.length === 0) return [];
+    return rankNearby(stations, { origin: location, radiusKm: 10000, fuelSlug: fuel });
+  }, [location, stations, fuel]);
+
+  const items = serverItems.length > 0 ? serverItems : clientFallback;
+  const available = items.filter((i) => i.fuelMatch === "available");
+  const others = items.filter((i) => i.fuelMatch !== "available");
 
   return (
     <main>
@@ -70,19 +79,21 @@ export default function NearestPage() {
           </div>
         )}
 
-        {location && search.status === "loading" && (
+        {location && search.status === "loading" && items.length === 0 && (
           <>
             <p className="px-4 font-medium" style={{ color: "var(--muted)" }}>{t("searching")}</p>
             <StationListSkeleton count={2} />
           </>
         )}
-        {location && search.status === "error" && <ErrorState message={search.kind === "network" ? tErr("network") : tErr("server")} onRetry={() => setNonce((n) => n + 1)} />}
+        {location && search.status === "error" && items.length === 0 && (
+          <ErrorState message={search.kind === "network" ? tErr("network") : tErr("server")} onRetry={() => setNonce((n) => n + 1)} />
+        )}
 
-        {location && search.status === "done" && (
+        {location && (search.status === "done" || items.length > 0) && (
           <>
-            {search.data.items.length === 0 && <EmptyState icon="🔍" title={tErr("noStations")} />}
+            {items.length === 0 && <EmptyState icon="🔍" title={tErr("noStations")} />}
 
-            {search.data.items.length > 0 && available.length === 0 && (
+            {items.length > 0 && available.length === 0 && (
               <p role="status" className="mx-4 rounded-2xl bg-amber-100 px-4 py-3 font-medium text-amber-900">⚠️ {tErr("noFuel")}</p>
             )}
 
