@@ -26,9 +26,9 @@ vi.mock("@/lib/db", () => {
       count: vi.fn().mockResolvedValue(5),
       findMany: vi.fn().mockResolvedValue([
         {
-          id: "st-tolroad",
-          name: "Tolroad TAF Station",
-          branchName: "Tolroad",
+          id: "st-tollroad",
+          name: "Tollroad TAF Station",
+          branchName: "Tollroad",
           city: "Adama",
           area: "Adama-Finfinee Expressway",
           address: "Adama-Finfinee Rest Stop",
@@ -108,7 +108,7 @@ vi.mock("@/lib/db", () => {
           entity: "fuel_status",
           createdAt: new Date(),
           actor: { firstName: "TAF", lastName: "Admin", role: "SUPER_ADMIN" },
-          station: { branchName: "Tolroad" },
+          station: { branchName: "Tollroad" },
           newValue: { status: "AVAILABLE" },
           oldValue: { status: "OUT_OF_STOCK" },
         },
@@ -194,7 +194,7 @@ describe("Super Admin Endpoints", () => {
       expect(data.stats.stations.total).toBe(5);
       expect(data.stats.subscribers.activeSubscriptions).toBe(42);
       expect(data.stations).toHaveLength(1);
-      expect(data.stations[0].branchName).toBe("Tolroad");
+      expect(data.stations[0].branchName).toBe("Tollroad");
       expect(data.stations[0].admin.telegramUserId).toBe("2074368152");
     });
 

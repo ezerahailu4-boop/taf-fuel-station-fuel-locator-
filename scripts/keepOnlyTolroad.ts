@@ -25,12 +25,12 @@ async function main() {
     console.log(`Removed: TAF ${st.branchName}`);
   }
 
-  // Ensure Tolroad station exists and is fully configured
-  let tolroad = await db.station.findFirst({ where: { branchName: "Tolroad" } });
+  // Ensure Tollroad station exists and is fully configured
+  let tollroad = await db.station.findFirst({ where: { branchName: "Tollroad" } });
 
-  const tolroadData = {
-    name: "Tolroad TAF Station",
-    branchName: "Tolroad",
+  const tollroadData = {
+    name: "Tollroad TAF Station",
+    branchName: "Tollroad",
     city: "Adama",
     area: "Adama-Finfinee Expressway",
     address: "Adama-Finfinee Rest Stop, Expressway, Oromia, Ethiopia",
@@ -43,17 +43,17 @@ async function main() {
     isActive: true,
   };
 
-  if (tolroad) {
-    tolroad = await db.station.update({
-      where: { id: tolroad.id },
-      data: tolroadData,
+  if (tollroad) {
+    tollroad = await db.station.update({
+      where: { id: tollroad.id },
+      data: tollroadData,
     });
-    console.log("Updated Tolroad station to active OPEN status.");
+    console.log("Updated Tollroad station to active OPEN status.");
   } else {
-    tolroad = await db.station.create({
-      data: tolroadData,
+    tollroad = await db.station.create({
+      data: tollroadData,
     });
-    console.log("Created Tolroad station.");
+    console.log("Created Tollroad station.");
   }
 
   // Ensure Benzine and Diesel are AVAILABLE at Tolroad
@@ -62,7 +62,7 @@ async function main() {
 
   if (benzine) {
     const existing = await db.stationFuelStatus.findFirst({
-      where: { stationId: tolroad.id, fuelTypeId: benzine.id },
+      where: { stationId: tollroad.id, fuelTypeId: benzine.id },
     });
     if (existing) {
       await db.stationFuelStatus.update({
@@ -71,14 +71,14 @@ async function main() {
       });
     } else {
       await db.stationFuelStatus.create({
-        data: { stationId: tolroad.id, fuelTypeId: benzine.id, status: FuelStatus.AVAILABLE },
+        data: { stationId: tollroad.id, fuelTypeId: benzine.id, status: FuelStatus.AVAILABLE },
       });
     }
   }
 
   if (diesel) {
     const existing = await db.stationFuelStatus.findFirst({
-      where: { stationId: tolroad.id, fuelTypeId: diesel.id },
+      where: { stationId: tollroad.id, fuelTypeId: diesel.id },
     });
     if (existing) {
       await db.stationFuelStatus.update({
@@ -87,7 +87,7 @@ async function main() {
       });
     } else {
       await db.stationFuelStatus.create({
-        data: { stationId: tolroad.id, fuelTypeId: diesel.id, status: FuelStatus.AVAILABLE },
+        data: { stationId: tollroad.id, fuelTypeId: diesel.id, status: FuelStatus.AVAILABLE },
       });
     }
   }
@@ -96,7 +96,7 @@ async function main() {
   const kerosene = await db.fuelType.findUnique({ where: { slug: "kerosene" } });
   if (kerosene) {
     await db.stationFuelStatus.deleteMany({
-      where: { stationId: tolroad.id, fuelTypeId: kerosene.id },
+      where: { stationId: tollroad.id, fuelTypeId: kerosene.id },
     });
   }
 
@@ -107,6 +107,6 @@ async function main() {
 main()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("Error keeping only Tolroad:", err);
+    console.error("Error keeping only Tollroad:", err);
     process.exit(1);
   });

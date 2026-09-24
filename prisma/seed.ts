@@ -27,12 +27,12 @@ const FUELS = [
   // { slug: "kerosene", nameEn: "Kerosene", nameAm: "ነጭ ጋዝ", icon: "⛽", displayOrder: 3 },
 ];
 
-// Production branch location specified: Tolroad TAF Station (Adama-Finfinee Rest Stop)
+// Production branch location specified: Tollroad TAF Station (Adama-Finfinee Rest Stop)
 const STATIONS = [
   {
-    key: "tolroad",
-    name: "Tolroad TAF Station",
-    branchName: "Tolroad",
+    key: "tollroad",
+    name: "Tollroad TAF Station",
+    branchName: "Tollroad",
     area: "Adama-Finfinee Expressway",
     city: "Adama",
     address: "Adama-Finfinee Rest Stop, Expressway, Oromia, Ethiopia",
@@ -50,10 +50,10 @@ async function main() {
     fuelTypes.push(await db.fuelType.upsert({ where: { slug: f.slug }, update: f, create: f }));
   }
 
-  console.log("Seeding Tolroad TAF Station...");
-  // Deactivate any old stations so only Tolroad is active
+  console.log("Seeding Tollroad TAF Station...");
+  // Deactivate any old stations so only Tollroad is active
   await db.station.updateMany({
-    where: { branchName: { not: "Tolroad" } },
+    where: { branchName: { not: "Tollroad" } },
     data: { isActive: false },
   });
 

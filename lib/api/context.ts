@@ -6,7 +6,8 @@ import { adminWriteLimiter, enforceRateLimit, publicReadLimiter } from "@/lib/ra
 
 import type { Actor } from "@/lib/auth/rbac";
 
-export const DEFAULT_TOLROAD_STATION_ID = "b0000000-0000-0000-0000-000000000001";
+export const DEFAULT_TOLLROAD_STATION_ID = "b0000000-0000-0000-0000-000000000001";
+export const DEFAULT_TOLROAD_STATION_ID = DEFAULT_TOLLROAD_STATION_ID;
 export const DEFAULT_STAFF_USER_ID = "c0000000-0000-0000-0000-000000000001";
 
 /** Authenticated staff/customer context. Writes are rate-limited per user. */

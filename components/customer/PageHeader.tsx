@@ -41,27 +41,51 @@ export function PageHeader({
               <ChevronLeftIcon className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />
             </Link>
           ) : (
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1 ring-1 ring-black/5 shadow-xs">
-              <Image
-                src="/brand/taf-logo.webp"
-                alt="TAF"
-                width={32}
-                height={32}
-                priority
-                className="object-contain"
-              />
+            <div
+              className="flex shrink-0 items-center gap-1 rounded-2xl border p-1 shadow-2xs transition-all hover:scale-[1.02]"
+              style={{
+                background: "var(--bg)",
+                borderColor: "var(--border)",
+              }}
+            >
+              {/* TAF Oil Official Emblem */}
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5 dark:bg-neutral-800">
+                <Image
+                  src="/brand/taf-logo.webp"
+                  alt="TAF"
+                  width={26}
+                  height={26}
+                  priority
+                  className="object-contain"
+                />
+              </div>
+
+              {/* Subtle vertical divider */}
+              <div className="h-4 w-px bg-neutral-300/80 dark:bg-neutral-700/80" />
+
+              {/* Fuel Ale (ነዳጅ አለ) Brand Mark beside TAF Logo */}
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs ring-1 ring-black/5 dark:bg-neutral-800">
+                <Image
+                  src="/brand/fuel-ale-logo.png"
+                  alt="ነዳጅ አለ"
+                  width={28}
+                  height={28}
+                  priority
+                  className="object-contain"
+                />
+              </div>
             </div>
           )}
           <div className="min-w-0">
             <h1
-              className="truncate text-lg font-black tracking-tight leading-tight"
+              className="truncate text-base sm:text-lg font-black tracking-tight leading-tight"
               style={{ color: "var(--text)" }}
             >
               {title}
             </h1>
             {subtitle && (
               <p
-                className="truncate text-xs font-medium"
+                className="truncate text-[11px] sm:text-xs font-medium"
                 style={{ color: "var(--muted)" }}
               >
                 {subtitle}
