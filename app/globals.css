@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Brand tokens sampled from the TAF logo. */
 @theme {
   --color-brand-orange: #f39c34;

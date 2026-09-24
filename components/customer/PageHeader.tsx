@@ -53,11 +53,17 @@ export function PageHeader({
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="truncate text-lg font-black tracking-tight leading-tight text-neutral-900 dark:text-neutral-50">
+            <h1
+              className="truncate text-lg font-black tracking-tight leading-tight"
+              style={{ color: "var(--text)" }}
+            >
               {title}
             </h1>
             {subtitle && (
-              <p className="truncate text-xs font-medium text-neutral-500 dark:text-neutral-400">
+              <p
+                className="truncate text-xs font-medium"
+                style={{ color: "var(--muted)" }}
+              >
                 {subtitle}
               </p>
             )}
