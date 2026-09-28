@@ -7,6 +7,7 @@ import { useAuth } from "./AuthProvider";
 
 export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const { loginWithPassword, loginWithCode, requestCode } = useAuth();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [useTelegramOtp, setUseTelegramOtp] = useState(false);
@@ -22,12 +23,12 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
     setBusy(true);
     setError(null);
     try {
-      await loginWithPassword(password.trim());
+      await loginWithPassword(password.trim(), username.trim() || undefined);
       onSuccess?.();
     } catch (err) {
       setError(
         err instanceof ApiClientError && err.status === 401
-          ? "Incorrect admin password. Please try again."
+          ? "Incorrect username or password. Please try again."
           : err instanceof Error
           ? err.message
           : "Failed to sign in. Please try again."
@@ -120,7 +121,7 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
               : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
           }`}
         >
-          🔑 Master Password
+          🔑 Password Sign In
         </button>
       </div>
 
@@ -128,12 +129,27 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
         /* PASSWORD LOGIN FORM */
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <p className="text-xs text-neutral-500">
-            For Super Admin: Enter your master password to access all administrative controls.
+            Sign in with your username and password, or use master password for Super Admin.
           </p>
 
           <label className="block space-y-1.5">
             <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
-              Admin Password
+              Username <span className="text-neutral-400 font-normal">(Leave empty for Super Admin)</span>
+            </span>
+            <input
+              type="text"
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="e.g. operations_admin"
+              className={inputStyle}
+              style={{ background: "var(--bg)", borderColor: "var(--border)" }}
+            />
+          </label>
+
+          <label className="block space-y-1.5">
+            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
+              Password
             </span>
             <div className="relative">
               <input

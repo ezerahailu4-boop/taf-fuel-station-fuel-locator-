@@ -11,7 +11,7 @@ import {
   UsersIcon,
   RefreshIcon,
   SearchIcon,
-  SparklesIcon,
+  ZapIcon,
 } from "@/components/ui/icons";
 
 interface OpsAdminUser {
@@ -20,6 +20,7 @@ interface OpsAdminUser {
   firstName: string;
   lastName: string | null;
   username: string | null;
+  hasPassword?: boolean;
   role: string;
   isActive: boolean;
   createdAt: string;
@@ -43,22 +44,30 @@ export function OperationsAdminManager() {
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [addMode, setAddMode] = useState<"search" | "manual">("search");
+  const [addMode, setAddMode] = useState<"credentials" | "search">("credentials");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchBotUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SearchBotUser | null>(null);
+  const [selectedUserPassword, setSelectedUserPassword] = useState("");
 
-  // Manual input state
-  const [manualTelegramId, setManualTelegramId] = useState("");
+  // Direct Username & Password input state
   const [manualFirstName, setManualFirstName] = useState("");
   const [manualUsername, setManualUsername] = useState("");
+  const [manualPassword, setManualPassword] = useState("");
+  const [manualTelegramId, setManualTelegramId] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Revoking state
   const [revokingId, setRevokingId] = useState<string | null>(null);
+
+  // Reset Password Modal
+  const [resetModalUser, setResetModalUser] = useState<OpsAdminUser | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const fetchAdmins = useCallback(async () => {
     try {
@@ -107,7 +116,28 @@ export function OperationsAdminManager() {
     setSubmitError(null);
 
     try {
-      if (addMode === "search") {
+      if (addMode === "credentials") {
+        if (!manualUsername.trim()) {
+          setSubmitError("Please enter a username.");
+          setSubmitting(false);
+          return;
+        }
+        if (!manualPassword.trim() || manualPassword.trim().length < 4) {
+          setSubmitError("Password must be at least 4 characters.");
+          setSubmitting(false);
+          return;
+        }
+
+        await apiFetch("/api/admin/users/operations-admin", {
+          method: "POST",
+          body: {
+            username: manualUsername.trim().replace(/^@/, ""),
+            password: manualPassword.trim(),
+            firstName: manualFirstName.trim() || manualUsername.trim(),
+            telegramUserId: manualTelegramId.trim() || undefined,
+          },
+        });
+      } else {
         if (!selectedUser) {
           setSubmitError("Please select a user to promote.");
           setSubmitting(false);
@@ -115,20 +145,9 @@ export function OperationsAdminManager() {
         }
         await apiFetch("/api/admin/users/operations-admin", {
           method: "POST",
-          body: { userId: selectedUser.id },
-        });
-      } else {
-        if (!manualTelegramId.trim() || !/^\d+$/.test(manualTelegramId.trim())) {
-          setSubmitError("Please enter a valid numeric Telegram User ID.");
-          setSubmitting(false);
-          return;
-        }
-        await apiFetch("/api/admin/users/operations-admin", {
-          method: "POST",
           body: {
-            telegramUserId: manualTelegramId.trim(),
-            firstName: manualFirstName.trim() || "Operations Admin",
-            username: manualUsername.trim().replace(/^@/, "") || undefined,
+            userId: selectedUser.id,
+            password: selectedUserPassword.trim() || undefined,
           },
         });
       }
@@ -141,6 +160,34 @@ export function OperationsAdminManager() {
       setSubmitError(err instanceof Error ? err.message : "Failed to add Operations Admin");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleResetPassword() {
+    if (!resetModalUser) return;
+    if (!newPassword.trim() || newPassword.trim().length < 4) {
+      setResetError("New password must be at least 4 characters.");
+      return;
+    }
+
+    setResettingPassword(true);
+    setResetError(null);
+    try {
+      await apiFetch("/api/admin/users/operations-admin", {
+        method: "PATCH",
+        body: {
+          userId: resetModalUser.id,
+          password: newPassword.trim(),
+        },
+      });
+      setResetModalUser(null);
+      setNewPassword("");
+      await fetchAdmins();
+      alert(`Password for ${resetModalUser.firstName} has been updated successfully!`);
+    } catch (err) {
+      setResetError(err instanceof Error ? err.message : "Failed to reset password");
+    } finally {
+      setResettingPassword(false);
     }
   }
 
@@ -164,10 +211,12 @@ export function OperationsAdminManager() {
 
   function resetModal() {
     setSelectedUser(null);
+    setSelectedUserPassword("");
     setSearchQuery("");
     setManualTelegramId("");
     setManualFirstName("");
     setManualUsername("");
+    setManualPassword("");
     setSubmitError(null);
   }
 
@@ -194,7 +243,7 @@ export function OperationsAdminManager() {
                 </Badge>
               </div>
               <CardDescription className="mt-1 text-xs text-neutral-500">
-                Operations Admins have authorized access to <strong>Overview</strong>, <strong>Customer Feedback</strong>, <strong>Stations</strong>, <strong>Fuel Types</strong>, and <strong>Audit Logs</strong> (without access to system settings or user role assignment).
+                Create usernames and passwords for managers to access <strong>Overview</strong>, <strong>Feedback</strong>, <strong>Stations</strong>, <strong>Fuel Types</strong>, and <strong>Audit Logs</strong>.
               </CardDescription>
             </div>
 
@@ -243,10 +292,10 @@ export function OperationsAdminManager() {
                 <UsersIcon className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
-                No Operations Admins assigned yet
+                No Operations Admins added yet
               </h3>
               <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
-                Promote a team member or add someone by Telegram ID to let them manage stations, view feedback, and monitor live fuel availability.
+                Create a username and password for a manager so they can sign in and manage stations and feedback.
               </p>
               <Button
                 variant="brand"
@@ -257,7 +306,7 @@ export function OperationsAdminManager() {
                 }}
                 className="mt-4 text-xs font-bold"
               >
-                <span>+ Add First Operations Admin</span>
+                <span>+ Create First Operations Admin</span>
               </Button>
             </div>
           ) : (
@@ -282,25 +331,49 @@ export function OperationsAdminManager() {
                             Operations
                           </span>
                         </div>
-                        {admin.username ? (
-                          <p className="text-xs text-brand-orange font-medium mt-0.5 truncate">
-                            @{admin.username}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-neutral-400 mt-0.5">No username</p>
-                        )}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-xs text-neutral-400">Username:</span>
+                          <code className="text-xs font-mono font-bold text-brand-orange">
+                            {admin.username ? `@${admin.username}` : "none"}
+                          </code>
+                          {admin.hasPassword ? (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-semibold ml-1">
+                              Password set ✓
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded font-semibold ml-1">
+                              Telegram only
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={revokingId === admin.id}
-                      onClick={() => handleRevoke(admin)}
-                      className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl shrink-0"
-                    >
-                      {revokingId === admin.id ? "Revoking..." : "Revoke Role"}
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setResetModalUser(admin);
+                          setNewPassword("");
+                          setResetError(null);
+                        }}
+                        className="text-xs text-neutral-600 dark:text-neutral-300 hover:text-brand-orange rounded-xl"
+                        title="Set or reset password"
+                      >
+                        🔑 Password
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={revokingId === admin.id}
+                        onClick={() => handleRevoke(admin)}
+                        className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl"
+                        title="Revoke admin access"
+                      >
+                        {revokingId === admin.id ? "..." : "Revoke"}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Details strip */}
@@ -347,14 +420,14 @@ export function OperationsAdminManager() {
             <span className="text-xl shrink-0">💡</span>
             <div className="text-xs space-y-1 text-neutral-600 dark:text-neutral-300">
               <p className="font-bold text-neutral-900 dark:text-neutral-100">
-                How newly added Operations Admins access the system:
+                How newly added Operations Admins sign in:
               </p>
               <ul className="list-disc pl-4 space-y-0.5 text-neutral-500 dark:text-neutral-400">
                 <li>
-                  <strong>Inside Telegram:</strong> They open <strong>@taf_fuel_bot</strong> and type <code>/admin</code> (or <code>/start</code>) to see an instant <strong>&quot;Operations Admin Dashboard&quot;</strong> button.
+                  <strong>Username & Password:</strong> They visit <strong>taf-fuel-station-fuel-locator.vercel.app/admin</strong>, enter the <strong>Username</strong> and <strong>Password</strong> you gave them, and click Sign In.
                 </li>
                 <li>
-                  <strong>Web Browser:</strong> They open <strong>taf-fuel-station-fuel-locator.vercel.app/admin</strong>, choose the <strong>Telegram Code</strong> tab, and enter their Telegram User ID to receive a 6-digit login code via the bot.
+                  <strong>Telegram:</strong> If their account is linked to Telegram, they can also tap <code>/admin</code> in <strong>@taf_fuel_bot</strong> to open the dashboard with 1 tap.
                 </li>
               </ul>
             </div>
@@ -362,7 +435,7 @@ export function OperationsAdminManager() {
         </CardContent>
       </Card>
 
-      {/* ADD OPERATIONS ADMIN MODAL */}
+      {/* CREATE OPERATIONS ADMIN MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div
@@ -375,7 +448,7 @@ export function OperationsAdminManager() {
                   Add Operations Admin
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  Grant access to stations, customer feedback, and real-time operations.
+                  Create a new username and password for your staff member.
                 </p>
               </div>
               <button
@@ -398,6 +471,20 @@ export function OperationsAdminManager() {
               <button
                 type="button"
                 onClick={() => {
+                  setAddMode("credentials");
+                  setSubmitError(null);
+                }}
+                className={`py-2 text-xs font-bold rounded-xl transition ${
+                  addMode === "credentials"
+                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm"
+                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                }`}
+              >
+                🔑 Create Username & Password
+              </button>
+              <button
+                type="button"
+                onClick={() => {
                   setAddMode("search");
                   setSubmitError(null);
                 }}
@@ -407,26 +494,81 @@ export function OperationsAdminManager() {
                     : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
                 }`}
               >
-                🔍 Existing Bot User
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAddMode("manual");
-                  setSubmitError(null);
-                }}
-                className={`py-2 text-xs font-bold rounded-xl transition ${
-                  addMode === "manual"
-                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm"
-                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                }`}
-              >
-                ✏️ By Telegram ID
+                🔍 From Bot Users
               </button>
             </div>
 
-            {addMode === "search" ? (
-              /* SEARCH REGISTERED BOT USERS */
+            {addMode === "credentials" ? (
+              /* CREATE WITH USERNAME AND PASSWORD */
+              <div className="space-y-3.5 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold block">
+                    Full Name <span className="text-neutral-400 font-normal">(e.g. Staff member name)</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ahmed Mohammed"
+                    value={manualFirstName}
+                    onChange={(e) => setManualFirstName(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                    style={{ borderColor: "var(--border)" }}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold block">
+                    Username for Login <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. ahmed_ops"
+                    value={manualUsername}
+                    onChange={(e) => setManualUsername(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange font-mono"
+                    style={{ borderColor: "var(--border)" }}
+                  />
+                  <span className="block text-[11px] text-neutral-400">
+                    They will type this username to sign in.
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold block">
+                    Password <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. taf2026!"
+                    value={manualPassword}
+                    onChange={(e) => setManualPassword(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange font-mono"
+                    style={{ borderColor: "var(--border)" }}
+                  />
+                  <span className="block text-[11px] text-neutral-400">
+                    At least 4 characters. You can change this anytime.
+                  </span>
+                </div>
+
+                <div className="space-y-1 pt-1">
+                  <label className="font-bold block">
+                    Telegram User ID <span className="text-neutral-400 font-normal">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="e.g. 2074368152 (leave empty if none)"
+                    value={manualTelegramId}
+                    onChange={(e) => setManualTelegramId(e.target.value.replace(/\D/g, ""))}
+                    className="w-full px-3 py-2 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange font-mono"
+                    style={{ borderColor: "var(--border)" }}
+                  />
+                </div>
+              </div>
+            ) : (
+              /* PROMOTE EXISTING BOT USER */
               <div className="space-y-3">
                 <div className="relative">
                   <SearchIcon className="absolute left-3 top-3 w-4 h-4 text-neutral-400" />
@@ -441,14 +583,14 @@ export function OperationsAdminManager() {
                 </div>
 
                 <div
-                  className="max-h-56 overflow-y-auto space-y-1.5 border rounded-2xl p-1.5"
+                  className="max-h-48 overflow-y-auto space-y-1.5 border rounded-2xl p-1.5"
                   style={{ borderColor: "var(--border)" }}
                 >
                   {searching ? (
                     <div className="p-4 text-center text-xs text-neutral-400">Searching bot users...</div>
                   ) : searchResults.length === 0 ? (
                     <div className="p-4 text-center text-xs text-neutral-400">
-                      No users found. Try searching by numeric Telegram ID or switch to &quot;By Telegram ID&quot;.
+                      No users found.
                     </div>
                   ) : (
                     searchResults.map((u) => {
@@ -487,61 +629,25 @@ export function OperationsAdminManager() {
                 </div>
 
                 {selectedUser && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                  <div className="space-y-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
                     <span className="font-bold text-neutral-900 dark:text-neutral-100">
-                      Selected: {selectedUser.firstName} ({selectedUser.telegramUserId})
+                      Promote {selectedUser.firstName} ({selectedUser.username ? `@${selectedUser.username}` : selectedUser.telegramUserId})
                     </span>
-                    <p className="text-[11px] text-neutral-500 mt-0.5">
-                      This user will be promoted to Operations Admin immediately.
-                    </p>
+                    <div>
+                      <label className="font-bold block text-[11px] mb-1">
+                        Optional Password:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Create a password for this user (optional)"
+                        value={selectedUserPassword}
+                        onChange={(e) => setSelectedUserPassword(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg border bg-surface font-mono text-xs"
+                        style={{ borderColor: "var(--border)" }}
+                      />
+                    </div>
                   </div>
                 )}
-              </div>
-            ) : (
-              /* ENTER TELEGRAM ID DIRECTLY */
-              <div className="space-y-3 text-xs">
-                <p className="text-neutral-500 text-[11px]">
-                  You can register an Operations Admin even before they open the bot. When they open it, their account will already have staff privileges.
-                </p>
-
-                <div className="space-y-1">
-                  <label className="font-bold block">
-                    Telegram User ID <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="e.g. 2074368152"
-                    value={manualTelegramId}
-                    onChange={(e) => setManualTelegramId(e.target.value.replace(/\D/g, ""))}
-                    className="w-full px-3 py-2 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange font-mono"
-                    style={{ borderColor: "var(--border)" }}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold block">Full Name (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Bekele Tadesse"
-                    value={manualFirstName}
-                    onChange={(e) => setManualFirstName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
-                    style={{ borderColor: "var(--border)" }}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold block">Telegram @username (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. bekele_t"
-                    value={manualUsername}
-                    onChange={(e) => setManualUsername(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange"
-                    style={{ borderColor: "var(--border)" }}
-                  />
-                </div>
               </div>
             )}
 
@@ -559,11 +665,81 @@ export function OperationsAdminManager() {
               <Button
                 variant="brand"
                 size="sm"
-                disabled={submitting || (addMode === "search" ? !selectedUser : !manualTelegramId.trim())}
+                disabled={submitting || (addMode === "credentials" ? !manualUsername.trim() || !manualPassword.trim() : !selectedUser)}
                 onClick={handleAddAdmin}
                 className="text-xs rounded-xl px-5 font-bold"
               >
-                {submitting ? "Adding..." : "Add Operations Admin"}
+                {submitting ? "Saving..." : "Create Admin Account"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RESET PASSWORD MODAL */}
+      {resetModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            className="w-full max-w-sm rounded-3xl p-6 shadow-2xl border space-y-4 animate-in zoom-in-95 duration-150 bg-surface"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-black text-base" style={{ color: "var(--text)" }}>
+                  Change Password
+                </h3>
+                <p className="text-xs text-neutral-500 mt-0.5">
+                  Set a new password for <strong>{resetModalUser.firstName}</strong> ({resetModalUser.username ? `@${resetModalUser.username}` : `ID ${resetModalUser.telegramUserId}`})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setResetModalUser(null)}
+                className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 text-lg leading-none p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {resetError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+                {resetError}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold block">
+                New Password <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                autoFocus
+                placeholder="Enter new password (min 4 chars)..."
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border bg-surface focus:outline-none focus:ring-2 focus:ring-brand-orange font-mono text-xs"
+                style={{ borderColor: "var(--border)" }}
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t" style={{ borderColor: "var(--border)" }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={resettingPassword}
+                onClick={() => setResetModalUser(null)}
+                className="text-xs rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="brand"
+                size="sm"
+                disabled={resettingPassword || newPassword.trim().length < 4}
+                onClick={handleResetPassword}
+                className="text-xs rounded-xl px-4 font-bold"
+              >
+                {resettingPassword ? "Updating..." : "Update Password"}
               </Button>
             </div>
           </div>

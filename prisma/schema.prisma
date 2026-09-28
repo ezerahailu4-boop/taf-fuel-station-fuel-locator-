@@ -60,6 +60,7 @@ model User {
   firstName       String   @map("first_name")
   lastName        String?  @map("last_name")
   username        String?
+  passwordHash    String?  @map("password_hash")
   languageCode    String?  @map("language_code")
   preferredLocale String   @default("en") @map("preferred_locale")
   phone           String?

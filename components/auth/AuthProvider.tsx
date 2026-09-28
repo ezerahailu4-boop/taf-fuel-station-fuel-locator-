@@ -14,7 +14,7 @@ interface AuthContextValue {
   state: AuthState;
   /** Authenticated fetch (Bearer token in Telegram, cookie on the web). */
   api: <T>(path: string, opts?: Omit<ApiOptions, "token">) => Promise<T>;
-  loginWithPassword: (password: string) => Promise<void>;
+  loginWithPassword: (password: string, username?: string) => Promise<void>;
   loginWithCode: (telegramId: string, code: string) => Promise<void>;
   requestCode: (telegramId: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -71,10 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await apiFetch("/api/auth/otp/request", { method: "POST", body: { telegramId } });
   }, []);
 
-  const loginWithPassword = useCallback(async (password: string) => {
+  const loginWithPassword = useCallback(async (password: string, username?: string) => {
     const res = await apiFetch<{ user: PublicUser; token?: string }>("/api/auth/password", {
       method: "POST",
-      body: { password },
+      body: { password, username: username || undefined },
     });
     if (res.token) {
       setToken(res.token);
