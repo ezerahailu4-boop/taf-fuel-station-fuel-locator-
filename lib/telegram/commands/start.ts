@@ -12,6 +12,7 @@ export async function handleStartCommand(
   const isAmharic = msg.from?.language_code?.toLowerCase().startsWith("am");
 
   let isSuperAdminUser = false;
+  let isOperationsAdmin = false;
   let totalUsers = 0;
 
   if (msg.from?.id) {
@@ -25,6 +26,7 @@ export async function handleStartCommand(
       });
 
       totalUsers = reg.totalUsers;
+      isOperationsAdmin = reg.user.role === "OPERATIONS_ADMIN";
       isSuperAdminUser =
         reg.user.role === "SUPER_ADMIN" ||
         msg.from.id.toString() === (process.env.SUPER_ADMIN_TELEGRAM_ID || "2074368152");
@@ -54,6 +56,10 @@ export async function handleStartCommand(
     adminNote = isAmharic
       ? `\n\n👑 **ዋና አስተዳዳሪ (Super Admin)**\n👥 **በአጠቃላይ ቦቱን የሚጠቀሙ ተጠቃሚዎች፦** ${totalUsers}`
       : `\n\n👑 **Super Admin Mode**\n👥 **Total Bot Users:** ${totalUsers}`;
+  } else if (isOperationsAdmin) {
+    adminNote = isAmharic
+      ? `\n\n🏢 **የሥራ አስኪያጅ አስተዳዳሪ (Operations Admin)**`
+      : `\n\n🏢 **Operations Admin Mode**`;
   }
 
   const text = (isAmharic
@@ -69,6 +75,18 @@ export async function handleStartCommand(
                 text: isAmharic
                   ? `👑 የዋና አስተዳዳሪ ፖርታል (${totalUsers} ተጠቃሚዎች)`
                   : `👑 Super Admin Portal (${totalUsers} Users)`,
+                web_app: { url: `${appUrl}/admin` },
+              },
+            ],
+          ]
+        : []),
+      ...(isOperationsAdmin
+        ? [
+            [
+              {
+                text: isAmharic
+                  ? "🏢 የሥራ አስኪያጅ ፖርታል (Operations Admin)"
+                  : "🏢 Operations Admin Portal",
                 web_app: { url: `${appUrl}/admin` },
               },
             ],

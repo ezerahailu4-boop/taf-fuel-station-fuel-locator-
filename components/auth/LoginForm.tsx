@@ -92,11 +92,43 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
         </div>
       </div>
 
+      {/* Auth Method Tabs */}
+      <div className="grid grid-cols-2 p-1 rounded-2xl bg-neutral-100 dark:bg-neutral-800/80 border border-neutral-200/60 dark:border-neutral-700/50">
+        <button
+          type="button"
+          onClick={() => {
+            setUseTelegramOtp(true);
+            setError(null);
+          }}
+          className={`py-2 text-xs font-bold rounded-xl transition ${
+            useTelegramOtp
+              ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+          }`}
+        >
+          📱 Telegram Code
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setUseTelegramOtp(false);
+            setError(null);
+          }}
+          className={`py-2 text-xs font-bold rounded-xl transition ${
+            !useTelegramOtp
+              ? "bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+          }`}
+        >
+          🔑 Master Password
+        </button>
+      </div>
+
       {!useTelegramOtp ? (
-        /* PASSWORD LOGIN FORM (DEFAULT) */
+        /* PASSWORD LOGIN FORM */
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <p className="text-xs text-neutral-500">
-            Enter your admin password to sign in to the Super Admin Dashboard.
+            For Super Admin: Enter your master password to access all administrative controls.
           </p>
 
           <label className="block space-y-1.5">
@@ -131,27 +163,14 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
           >
             {busy ? "Signing in..." : "Sign In to Admin Portal →"}
           </button>
-
-          <div className="pt-2 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setUseTelegramOtp(true);
-                setError(null);
-              }}
-              className="text-xs text-neutral-400 hover:text-brand-orange transition"
-            >
-              Or sign in with Telegram Bot code instead
-            </button>
-          </div>
         </form>
       ) : (
-        /* TELEGRAM OTP FALLBACK FORM */
-        <div>
+        /* TELEGRAM OTP FORM (FOR OPERATIONS ADMINS & STAFF) */
+        <div className="space-y-4">
           {otpStep === "id" ? (
             <form onSubmit={handleSendOtp} className="space-y-4">
               <p className="text-xs text-neutral-500">
-                Enter your Telegram ID to receive a one-time login code via the TAF bot.
+                For Operations & Branch Admins: Enter your numeric Telegram User ID to receive a secure login code via the TAF bot.
               </p>
               <label className="block space-y-1.5">
                 <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300">
@@ -168,13 +187,16 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
                   value={telegramId}
                   onChange={(e) => setTelegramId(e.target.value.replace(/\D/g, ""))}
                 />
+                <span className="block text-[11px] text-neutral-400 pt-0.5">
+                  💡 You can find this in Telegram by opening @taf_fuel_bot, or in the Super Admin Bot Users list.
+                </span>
               </label>
               <button
                 type="submit"
                 disabled={busy || telegramId.length === 0}
                 className="min-h-11 w-full rounded-xl bg-brand-orange px-4 font-bold text-sm text-neutral-900 shadow-sm transition hover:brightness-105 disabled:opacity-50"
               >
-                {busy ? "Sending Code..." : "Send Telegram Code"}
+                {busy ? "Sending Code..." : "Send Telegram Code →"}
               </button>
             </form>
           ) : (
@@ -203,23 +225,19 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
                 disabled={busy || code.length !== 6}
                 className="min-h-11 w-full rounded-xl bg-brand-orange px-4 font-bold text-sm text-neutral-900 shadow-sm transition hover:brightness-105 disabled:opacity-50"
               >
-                {busy ? "Verifying..." : "Verify & Sign In"}
+                {busy ? "Verifying..." : "Verify & Sign In →"}
               </button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setOtpStep("id")}
+                  className="text-xs text-neutral-400 hover:text-brand-orange transition"
+                >
+                  ← Change Telegram ID
+                </button>
+              </div>
             </form>
           )}
-
-          <div className="pt-3 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setUseTelegramOtp(false);
-                setError(null);
-              }}
-              className="text-xs text-neutral-400 hover:text-brand-orange transition"
-            >
-              ← Back to Password Sign In
-            </button>
-          </div>
         </div>
       )}
 

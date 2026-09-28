@@ -20,7 +20,12 @@ export async function handleAdminCommand(
   }
 
   const user = await userRepository.findByTelegramId(tgId);
-  const isStaff = user && (user.role === "SUPER_ADMIN" || user.role === "BRANCH_ADMIN" || user.role === "VIEWER");
+  const isStaff =
+    user &&
+    (user.role === "SUPER_ADMIN" ||
+      user.role === "OPERATIONS_ADMIN" ||
+      user.role === "BRANCH_ADMIN" ||
+      user.role === "VIEWER");
 
   if (!isStaff) {
     const deniedText = isAmharic
@@ -30,11 +35,22 @@ export async function handleAdminCommand(
     return;
   }
 
-  const roleText = user.role === "SUPER_ADMIN"
-    ? (isAmharic ? "ዋና አስተዳዳሪ (Super Admin)" : "Super Administrator")
-    : user.role === "BRANCH_ADMIN"
-    ? (isAmharic ? "የቅርንጫፍ ኃላፊ (Branch Admin)" : "Branch Administrator")
-    : (isAmharic ? "ተመልካች (Viewer)" : "Viewer");
+  const roleText =
+    user.role === "SUPER_ADMIN"
+      ? isAmharic
+        ? "ዋና አስተዳዳሪ (Super Admin)"
+        : "Super Administrator"
+      : user.role === "OPERATIONS_ADMIN"
+      ? isAmharic
+        ? "የሥራ አስኪያጅ አስተዳዳሪ (Operations Admin)"
+        : "Operations Administrator"
+      : user.role === "BRANCH_ADMIN"
+      ? isAmharic
+        ? "የቅርንጫፍ ኃላፊ (Branch Admin)"
+        : "Branch Administrator"
+      : isAmharic
+      ? "ተመልካች (Viewer)"
+      : "Viewer";
 
   let statsText = "";
   if (user.role === "SUPER_ADMIN") {
@@ -54,10 +70,16 @@ export async function handleAdminCommand(
 
   const buttons: TelegramInlineKeyboardMarkup["inline_keyboard"] = [];
 
-  if (user.role === "SUPER_ADMIN") {
+  if (user.role === "SUPER_ADMIN" || user.role === "OPERATIONS_ADMIN") {
     buttons.push([
       {
-        text: isAmharic ? "👑 የዋና አስተዳዳሪ ዳሽቦርድ (Super Admin)" : "👑 Super Admin Dashboard",
+        text: isAmharic
+          ? user.role === "SUPER_ADMIN"
+            ? "👑 የዋና አስተዳዳሪ ዳሽቦርድ (Super Admin)"
+            : "🏢 የሥራ አስኪያጅ ዳሽቦርድ (Operations Admin)"
+          : user.role === "SUPER_ADMIN"
+          ? "👑 Super Admin Dashboard"
+          : "🏢 Operations Admin Dashboard",
         web_app: { url: `${appUrl}/admin` },
       },
     ]);

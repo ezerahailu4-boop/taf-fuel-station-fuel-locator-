@@ -14,7 +14,11 @@ export function LoginPageClient() {
 
   useEffect(() => {
     if (state.status === "authenticated") {
-      if (state.user.role === "SUPER_ADMIN" || state.user.role === "VIEWER") {
+      if (
+        state.user.role === "SUPER_ADMIN" ||
+        state.user.role === "OPERATIONS_ADMIN" ||
+        state.user.role === "VIEWER"
+      ) {
         router.replace("/admin");
       } else if (state.user.role === "BRANCH_ADMIN") {
         router.replace("/branch");
