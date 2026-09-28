@@ -35,7 +35,11 @@ export function BranchApp() {
 
   // If signed in with an administrative role, use that user; otherwise use the default staff user
   const user: PublicUser =
-    state.status === "authenticated" && (state.user.role === "SUPER_ADMIN" || state.user.role === "BRANCH_ADMIN" || state.user.role === "VIEWER")
+    state.status === "authenticated" &&
+    (state.user.role === "SUPER_ADMIN" ||
+      state.user.role === "OPERATIONS_ADMIN" ||
+      state.user.role === "BRANCH_ADMIN" ||
+      state.user.role === "VIEWER")
       ? state.user
       : DEFAULT_STAFF_USER;
 

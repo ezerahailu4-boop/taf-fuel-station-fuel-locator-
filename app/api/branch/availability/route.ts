@@ -12,7 +12,7 @@ import { saveAvailability } from "@/services/fuelStatusService";
  */
 export const PUT = handle(async (req) => {
   const { actor, ip } = await branchAuthContext(req, { write: true });
-  requireRole(actor, "BRANCH_ADMIN", "SUPER_ADMIN");
+  requireRole(actor, "BRANCH_ADMIN", "OPERATIONS_ADMIN", "SUPER_ADMIN");
   const input = await parseBody(req, availabilityUpdateSchema);
   const { changed, plan } = await saveAvailability(fuelStatusDeps(), actor, input, ip);
   return json({ changed, fuelChanges: plan.fuelChanges, stationStatusChange: plan.stationStatusChange });

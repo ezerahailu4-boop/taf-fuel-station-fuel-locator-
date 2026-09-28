@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher";
@@ -33,10 +34,13 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
   const { api, logout, state } = useAuth();
 
   const isBranchAdmin = user.role === "BRANCH_ADMIN";
-  const canWrite = user.role === "BRANCH_ADMIN" || user.role === "SUPER_ADMIN";
+  const canWrite = user.role === "BRANCH_ADMIN" || user.role === "OPERATIONS_ADMIN" || user.role === "SUPER_ADMIN";
+
+  const searchParams = useSearchParams();
+  const queryStationId = searchParams?.get("stationId") ?? null;
 
   const [options, setOptions] = useState<Array<{ id: string; branchName: string; city: string }>>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(queryStationId);
   const [station, setStation] = useState<StationDTO | null>(null);
   const [activity, setActivity] = useState<ActivityDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,10 +64,10 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
     api<Page<StationDTO>>("/api/stations?pageSize=50")
       .then((p) => {
         setOptions(p.items.map((s) => ({ id: s.id, branchName: s.branchName, city: s.city })));
-        setSelectedId((cur) => cur ?? p.items[0]?.id ?? null);
+        setSelectedId((cur) => queryStationId ?? cur ?? p.items[0]?.id ?? null);
       })
       .catch((e) => setLoadError(errorText(e)));
-  }, [api, isBranchAdmin, errorText]);
+  }, [api, isBranchAdmin, errorText, queryStationId]);
 
   const stationParam = isBranchAdmin ? "" : selectedId ? `stationId=${selectedId}` : null;
 

@@ -8,7 +8,7 @@ import { confirmAvailability } from "@/services/fuelStatusService";
 /** "Still accurate ✓": refresh freshness without changing statuses. */
 export const POST = handle(async (req) => {
   const { actor, ip } = await branchAuthContext(req, { write: true });
-  requireRole(actor, "BRANCH_ADMIN", "SUPER_ADMIN");
+  requireRole(actor, "BRANCH_ADMIN", "OPERATIONS_ADMIN", "SUPER_ADMIN");
   const { stationId } = await parseBody(req, confirmSchema);
   return json(await confirmAvailability(fuelStatusDeps(), actor, stationId, ip));
 });

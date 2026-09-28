@@ -362,10 +362,17 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                         <span>Update Fuel at Tolroad</span>
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm" onClick={() => setTab("users")}>
-                      <UsersIcon className="w-3.5 h-3.5" />
-                      <span>View All Users ({data.stats.subscribers.totalUsers})</span>
-                    </Button>
+                    {!isOperationsAdmin ? (
+                      <Button variant="outline" size="sm" onClick={() => setTab("users")}>
+                        <UsersIcon className="w-3.5 h-3.5" />
+                        <span>View All Users ({data.stats.subscribers.totalUsers})</span>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => setTab("feedback")}>
+                        <MailIcon className="w-3.5 h-3.5" />
+                        <span>Customer Feedback</span>
+                      </Button>
+                    )}
                     <Button variant="secondary" size="sm" onClick={() => setTab("stations")}>
                       <GasStationIcon className="w-3.5 h-3.5" />
                       <span>Stations</span>
@@ -375,38 +382,67 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
                 {/* KPI Metrics Cards (Vibrant Brand Style) */}
                 <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
-                  {/* Bot Users */}
-                  <Card
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setTab("users")}
-                    onKeyDown={(e) => e.key === "Enter" && setTab("users")}
-                    className="cursor-pointer border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-transparent hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all group"
-                  >
-                    <CardHeader className="p-4 pb-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 group-hover:text-brand-orange transition">
-                          Bot Users
-                        </span>
-                        <div className="p-1.5 rounded-lg bg-amber-500/20 text-brand-orange shadow-xs">
-                          <UsersIcon className="w-4 h-4" />
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <div className="text-3xl font-black text-amber-600 dark:text-amber-400">
-                        {data.stats.subscribers.totalUsers}
-                      </div>
-                      <div className="mt-1 flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
-                        {data.stats.subscribers.newToday ? (
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                            +{data.stats.subscribers.newToday} today ·{" "}
+                  {/* Bot Users (Super Admin) or Customer Feedback (Operations Admin) */}
+                  {!isOperationsAdmin ? (
+                    <Card
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setTab("users")}
+                      onKeyDown={(e) => e.key === "Enter" && setTab("users")}
+                      className="cursor-pointer border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-transparent hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all group"
+                    >
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 group-hover:text-brand-orange transition">
+                            Bot Users
                           </span>
-                        ) : null}
-                        <span className="group-hover:translate-x-0.5 transition-transform inline-block">View directory →</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          <div className="p-1.5 rounded-lg bg-amber-500/20 text-brand-orange shadow-xs">
+                            <UsersIcon className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-3xl font-black text-amber-600 dark:text-amber-400">
+                          {data.stats.subscribers.totalUsers}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                          {data.stats.subscribers.newToday ? (
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                              +{data.stats.subscribers.newToday} today ·{" "}
+                            </span>
+                          ) : null}
+                          <span className="group-hover:translate-x-0.5 transition-transform inline-block">View directory →</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setTab("feedback")}
+                      onKeyDown={(e) => e.key === "Enter" && setTab("feedback")}
+                      className="cursor-pointer border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-card to-transparent hover:border-amber-500 hover:shadow-lg hover:shadow-amber-500/10 transition-all group"
+                    >
+                      <CardHeader className="p-4 pb-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 group-hover:text-brand-orange transition">
+                            Feedback
+                          </span>
+                          <div className="p-1.5 rounded-lg bg-amber-500/20 text-brand-orange shadow-xs">
+                            <MailIcon className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4 pt-0">
+                        <div className="text-3xl font-black text-amber-600 dark:text-amber-400">
+                          Support
+                        </div>
+                        <div className="mt-1 text-[11px] text-neutral-500 dark:text-neutral-400">
+                          <span className="group-hover:translate-x-0.5 transition-transform inline-block">Manage feedback →</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Active Stations */}
                   <Card className="border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-card to-transparent hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all">
@@ -583,7 +619,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                             </span>
                             <div className="flex items-center gap-2">
                               <Link
-                                href="/branch"
+                                href={`/branch?stationId=${s.id}`}
                                 className="font-bold text-xs text-brand-orange hover:underline inline-flex items-center gap-0.5"
                               >
                                 <span>Update Fuel</span>
@@ -604,79 +640,81 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                   </CardContent>
                 </Card>
 
-                {/* Dual Column: Recent Bot Users & System Activity */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Dual Column: Recent Bot Users (Super Admin only) & System Activity */}
+                <div className={`grid grid-cols-1 ${!isOperationsAdmin ? "lg:grid-cols-2" : ""} gap-6`}>
                   {/* Recent Bot Users */}
-                  <Card>
-                    <CardHeader className="p-5 pb-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-base font-bold flex items-center gap-2">
-                            <UsersIcon className="w-4 h-4 text-brand-orange" />
-                            <span>Recent Bot Users</span>
-                          </CardTitle>
-                          <CardDescription>
-                            Latest Telegram users who started @taf_fuel_bot
-                          </CardDescription>
+                  {!isOperationsAdmin && (
+                    <Card>
+                      <CardHeader className="p-5 pb-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-base font-bold flex items-center gap-2">
+                              <UsersIcon className="w-4 h-4 text-brand-orange" />
+                              <span>Recent Bot Users</span>
+                            </CardTitle>
+                            <CardDescription>
+                              Latest Telegram users who started @taf_fuel_bot
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setTab("users")}
+                            className="text-xs text-brand-orange font-bold"
+                          >
+                            View all ({data.stats.subscribers.totalUsers}) →
+                          </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setTab("users")}
-                          className="text-xs text-brand-orange font-bold"
-                        >
-                          View all ({data.stats.subscribers.totalUsers}) →
-                        </Button>
-                      </div>
-                    </CardHeader>
+                      </CardHeader>
 
-                    <CardContent className="p-5 pt-1">
-                      {data.recentUsers && data.recentUsers.length > 0 ? (
-                        <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-                          {data.recentUsers.slice(0, 5).map((u) => {
-                            const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ") || "User";
-                            const initials = (u.firstName?.[0] || "U") + (u.lastName?.[0] || "");
-                            return (
-                              <div
-                                key={u.id}
-                                className="py-3 flex items-center justify-between gap-3 text-xs"
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="h-8 w-8 rounded-full bg-brand-orange/15 text-brand-orange font-black flex items-center justify-center text-xs shrink-0 ring-1 ring-brand-orange/20">
-                                    {initials}
-                                  </div>
-                                  <div className="min-w-0">
-                                    <div className="font-bold truncate text-neutral-800 dark:text-neutral-100">
-                                      {fullName}
+                      <CardContent className="p-5 pt-1">
+                        {data.recentUsers && data.recentUsers.length > 0 ? (
+                          <div className="divide-y" style={{ borderColor: "var(--border)" }}>
+                            {data.recentUsers.slice(0, 5).map((u) => {
+                              const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ") || "User";
+                              const initials = (u.firstName?.[0] || "U") + (u.lastName?.[0] || "");
+                              return (
+                                <div
+                                  key={u.id}
+                                  className="py-3 flex items-center justify-between gap-3 text-xs"
+                                >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div className="h-8 w-8 rounded-full bg-brand-orange/15 text-brand-orange font-black flex items-center justify-center text-xs shrink-0 ring-1 ring-brand-orange/20">
+                                      {initials}
                                     </div>
-                                    <div className="text-[11px] text-neutral-400 truncate">
-                                      {u.username ? `@${u.username}` : `ID: ${u.telegramUserId}`}
+                                    <div className="min-w-0">
+                                      <div className="font-bold truncate text-neutral-800 dark:text-neutral-100">
+                                        {fullName}
+                                      </div>
+                                      <div className="text-[11px] text-neutral-400 truncate">
+                                        {u.username ? `@${u.username}` : `ID: ${u.telegramUserId}`}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right shrink-0">
+                                    <Badge variant={u.role === "SUPER_ADMIN" ? "brand" : "secondary"}>
+                                      {u.role}
+                                    </Badge>
+                                    <div className="text-[10px] text-neutral-400 mt-1">
+                                      <RelativeTime value={u.createdAt} />
                                     </div>
                                   </div>
                                 </div>
-
-                                <div className="text-right shrink-0">
-                                  <Badge variant={u.role === "SUPER_ADMIN" ? "brand" : "secondary"}>
-                                    {u.role}
-                                  </Badge>
-                                  <div className="text-[10px] text-neutral-400 mt-1">
-                                    <RelativeTime value={u.createdAt} />
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="py-8 text-center text-neutral-400 text-xs">
-                          No users registered yet.
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="py-8 text-center text-neutral-400 text-xs">
+                            No users registered yet.
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Recent System Activity */}
-                  <Card>
+                  <Card className={isOperationsAdmin ? "col-span-full" : ""}>
                     <CardHeader className="p-5 pb-3">
                       <div className="flex items-center justify-between">
                         <div>

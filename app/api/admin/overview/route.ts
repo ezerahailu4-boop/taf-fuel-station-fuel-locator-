@@ -116,7 +116,7 @@ export const GET = handle(async (req) => {
         },
         notifications: { sent: deliveriesSent, pending: deliveriesPending, blocked: deliveriesBlocked },
       },
-      recentUsers: (recentUsers || []).map((u) => ({
+      recentUsers: actor.role === "OPERATIONS_ADMIN" ? [] : (recentUsers || []).map((u) => ({
         id: u.id,
         telegramUserId: (u.telegramUserId ?? "").toString(),
         firstName: u.firstName || "User",
