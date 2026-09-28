@@ -6,6 +6,7 @@ const BOLE = "station-bole";
 const SARIS = "station-saris";
 
 const superAdmin: Actor = { id: "s", role: "SUPER_ADMIN", stationId: null };
+const operationsAdmin: Actor = { id: "op", role: "OPERATIONS_ADMIN", stationId: null };
 const boleAdmin: Actor = { id: "b", role: "BRANCH_ADMIN", stationId: BOLE };
 const orphanAdmin: Actor = { id: "o", role: "BRANCH_ADMIN", stationId: null };
 const viewer: Actor = { id: "v", role: "VIEWER", stationId: null };
@@ -24,6 +25,8 @@ const status = (fn: () => void) => {
 describe("requireRole", () => {
   it("allows listed roles and rejects others with 403", () => {
     expect(status(() => requireRole(superAdmin, "SUPER_ADMIN"))).toBe(200);
+    expect(status(() => requireRole(operationsAdmin, "OPERATIONS_ADMIN", "SUPER_ADMIN"))).toBe(200);
+    expect(status(() => requireRole(operationsAdmin, "SUPER_ADMIN"))).toBe(403);
     expect(status(() => requireRole(boleAdmin, "SUPER_ADMIN"))).toBe(403);
     expect(status(() => requireRole(customer, "BRANCH_ADMIN", "SUPER_ADMIN"))).toBe(403);
   });
@@ -33,6 +36,12 @@ describe("requireStationAccess (branch-level access control)", () => {
   it("super admin can read and write any station", () => {
     expect(canAccessStation(superAdmin, BOLE, true)).toBe(true);
     expect(canAccessStation(superAdmin, SARIS, true)).toBe(true);
+  });
+
+  it("operations admin can read and write any station", () => {
+    expect(canAccessStation(operationsAdmin, BOLE, true)).toBe(true);
+    expect(canAccessStation(operationsAdmin, SARIS, true)).toBe(true);
+    expect(canAccessStation(operationsAdmin, BOLE, false)).toBe(true);
   });
 
   it("branch admin can read and write ONLY their own station", () => {

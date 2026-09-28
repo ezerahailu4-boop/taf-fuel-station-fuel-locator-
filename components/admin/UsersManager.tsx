@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SearchIcon, RefreshIcon, UsersIcon, BellIcon, ShieldCheckIcon } from "@/components/ui/icons";
+import type { StationItem } from "./StationsManager";
 
 export interface BotUserItem {
   id: string;
@@ -25,13 +26,20 @@ export interface BotUserItem {
   activeAlerts: number;
 }
 
-export function UsersManager() {
+export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
   const [users, setUsers] = useState<BotUserItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [, startTransition] = useTransition();
+
+  // Role editing modal state
+  const [editingUser, setEditingUser] = useState<BotUserItem | null>(null);
+  const [selectedRole, setSelectedRole] = useState<string>("CUSTOMER");
+  const [selectedStationId, setSelectedStationId] = useState<string>("");
+  const [savingRole, setSavingRole] = useState(false);
+  const [roleError, setRoleError] = useState<string | null>(null);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -59,6 +67,91 @@ export function UsersManager() {
     return () => clearTimeout(timer);
   }, [search, roleFilter]);
 
+  const openEditRole = (u: BotUserItem) => {
+    setEditingUser(u);
+    setSelectedRole(u.role);
+    setSelectedStationId("");
+    setRoleError(null);
+  };
+
+  const handleSaveRole = async () => {
+    if (!editingUser) return;
+    if (selectedRole === "BRANCH_ADMIN" && !selectedStationId) {
+      setRoleError("Please select a station for Branch Staff.");
+      return;
+    }
+
+    setSavingRole(true);
+    setRoleError(null);
+    try {
+      await apiFetch(`/api/admin/users/${editingUser.id}/role`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          role: selectedRole,
+          stationId: selectedRole === "BRANCH_ADMIN" ? selectedStationId : null,
+        }),
+      });
+
+      // Update in local state
+      const stationName =
+        selectedRole === "BRANCH_ADMIN"
+          ? stations.find((s) => s.id === selectedStationId)?.branchName ?? null
+          : null;
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editingUser.id
+            ? { ...u, role: selectedRole, station: stationName }
+            : u
+        )
+      );
+
+      setEditingUser(null);
+    } catch (err: any) {
+      console.error("[UsersManager] Error updating role:", err);
+      setRoleError(err.message || "Failed to update user role.");
+    } finally {
+      setSavingRole(false);
+    }
+  };
+
+  const renderRoleBadge = (role: string, station?: string | null) => {
+    if (role === "SUPER_ADMIN") {
+      return (
+        <Badge variant="brand" className="shrink-0 flex items-center gap-1">
+          <ShieldCheckIcon className="w-3 h-3" />
+          <span>SUPER ADMIN</span>
+        </Badge>
+      );
+    }
+    if (role === "OPERATIONS_ADMIN") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 shrink-0">
+          <span>⚡ OPERATIONS ADMIN</span>
+        </span>
+      );
+    }
+    if (role === "BRANCH_ADMIN") {
+      return (
+        <Badge variant="warning" className="shrink-0">
+          <span>BRANCH STAFF{station ? ` (${station})` : ""}</span>
+        </Badge>
+      );
+    }
+    if (role === "VIEWER") {
+      return (
+        <Badge variant="outline" className="shrink-0">
+          <span>VIEWER</span>
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary" className="shrink-0">
+        <span>CUSTOMER</span>
+      </Badge>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner Card */}
@@ -72,11 +165,11 @@ export function UsersManager() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg font-black">Telegram Bot Users</CardTitle>
+                    <CardTitle className="text-lg font-black">Telegram Bot Users & Roles</CardTitle>
                     <Badge variant="brand">{total} registered</Badge>
                   </div>
                   <CardDescription>
-                    Directory of all users who have launched or used @taf_fuel_bot
+                    Directory of registered users. Promote users to Operations Admin or assign station staff.
                   </CardDescription>
                 </div>
               </div>
@@ -114,6 +207,7 @@ export function UsersManager() {
               {[
                 { id: "ALL", label: "All Users" },
                 { id: "CUSTOMER", label: "Customers" },
+                { id: "OPERATIONS_ADMIN", label: "Operations Admins" },
                 { id: "BRANCH_ADMIN", label: "Branch Staff" },
                 { id: "SUPER_ADMIN", label: "Super Admins" },
               ].map((rf) => (
@@ -176,19 +270,7 @@ export function UsersManager() {
                       </div>
                     </div>
 
-                    <Badge
-                      variant={
-                        u.role === "SUPER_ADMIN"
-                          ? "brand"
-                          : u.role === "BRANCH_ADMIN"
-                          ? "warning"
-                          : "secondary"
-                      }
-                      className="shrink-0"
-                    >
-                      {u.role === "SUPER_ADMIN" && <ShieldCheckIcon className="w-3 h-3" />}
-                      <span>{u.role}</span>
-                    </Badge>
+                    {renderRoleBadge(u.role, u.station)}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-neutral-500/10 text-xs">
@@ -204,16 +286,14 @@ export function UsersManager() {
                       )}
                     </div>
 
-                    <div className="text-[11px] text-neutral-400">
-                      {u.lastLoginAt ? (
-                        <span className="inline-flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <RelativeTime value={u.lastLoginAt} />
-                        </span>
-                      ) : (
-                        <span>Joined <RelativeTime value={u.createdAt} /></span>
-                      )}
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEditRole(u)}
+                      className="text-[11px] h-7 px-2.5 rounded-lg"
+                    >
+                      Change Role
+                    </Button>
                   </div>
                 </div>
               );
@@ -233,7 +313,8 @@ export function UsersManager() {
                   <th className="p-3.5 font-bold">Role</th>
                   <th className="p-3.5 font-bold">Station Watches</th>
                   <th className="p-3.5 font-bold">Joined</th>
-                  <th className="p-3.5 pr-5 font-bold">Last Active</th>
+                  <th className="p-3.5 font-bold">Last Active</th>
+                  <th className="p-3.5 pr-5 font-bold text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
@@ -269,21 +350,7 @@ export function UsersManager() {
 
                       {/* Role Badge */}
                       <td className="p-3.5">
-                        <Badge
-                          variant={
-                            u.role === "SUPER_ADMIN"
-                              ? "brand"
-                              : u.role === "BRANCH_ADMIN"
-                              ? "warning"
-                              : "secondary"
-                          }
-                        >
-                          {u.role === "SUPER_ADMIN" && <ShieldCheckIcon className="w-3 h-3" />}
-                          <span>
-                            {u.role}
-                            {u.station && ` (${u.station})`}
-                          </span>
-                        </Badge>
+                        {renderRoleBadge(u.role, u.station)}
                       </td>
 
                       {/* Active Watches */}
@@ -304,7 +371,7 @@ export function UsersManager() {
                       </td>
 
                       {/* Last Active */}
-                      <td className="p-3.5 pr-5 text-neutral-500 text-[11px] whitespace-nowrap">
+                      <td className="p-3.5 text-neutral-500 text-[11px] whitespace-nowrap">
                         {u.lastLoginAt ? (
                           <span className="inline-flex items-center gap-1.5">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -314,6 +381,18 @@ export function UsersManager() {
                           <span className="text-neutral-400">Never</span>
                         )}
                       </td>
+
+                      {/* Action */}
+                      <td className="p-3.5 pr-5 text-right whitespace-nowrap">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditRole(u)}
+                          className="text-[11px] h-7 px-3 rounded-lg font-bold hover:bg-brand-orange/10 hover:text-brand-orange transition"
+                        >
+                          Change Role
+                        </Button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -321,6 +400,161 @@ export function UsersManager() {
             </table>
           </div>
         </Card>
+      )}
+
+      {/* Edit Role Modal Dialog */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div
+            className="w-full max-w-md rounded-3xl p-6 border shadow-2xl space-y-4 animate-in zoom-in-95 duration-200"
+            style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+          >
+            <div>
+              <h3 className="text-lg font-black" style={{ color: "var(--text)" }}>
+                Change User Role
+              </h3>
+              <p className="text-xs text-neutral-500 mt-0.5">
+                Assign administrative permissions or promote this user.
+              </p>
+            </div>
+
+            {/* User Info Card */}
+            <div className="rounded-2xl p-3.5 border bg-neutral-50 dark:bg-neutral-900/50 space-y-1">
+              <div className="font-bold text-xs" style={{ color: "var(--text)" }}>
+                {[editingUser.firstName, editingUser.lastName].filter(Boolean).join(" ")}
+              </div>
+              <div className="text-[11px] text-neutral-400 flex items-center gap-2">
+                <span>{editingUser.username ? `@${editingUser.username}` : "No username"}</span>
+                <span>·</span>
+                <span>ID: {editingUser.telegramUserId}</span>
+              </div>
+            </div>
+
+            {roleError && (
+              <div className="rounded-xl bg-rose-500/10 border border-rose-500/20 p-3 text-xs text-rose-600 dark:text-rose-400 font-medium">
+                {roleError}
+              </div>
+            )}
+
+            {/* Role Options */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold" style={{ color: "var(--text)" }}>
+                Select Role & Access Level
+              </label>
+
+              <div className="space-y-2">
+                {[
+                  {
+                    id: "OPERATIONS_ADMIN",
+                    title: "⚡ Operations Admin",
+                    desc: "Can view Overview, manage Feedback, update Stations, Fuel Types, and view Audit Logs.",
+                    badge: "Recommended",
+                  },
+                  {
+                    id: "BRANCH_ADMIN",
+                    title: "⛽ Branch Staff",
+                    desc: "Staff member restricted to updating fuel availability for one assigned station.",
+                  },
+                  {
+                    id: "SUPER_ADMIN",
+                    title: "👑 Super Admin",
+                    desc: "Full system control, managing bot users, secrets, and system configuration.",
+                  },
+                  {
+                    id: "CUSTOMER",
+                    title: "👤 Customer",
+                    desc: "Regular user of the bot and Telegram Mini App.",
+                  },
+                  {
+                    id: "VIEWER",
+                    title: "👁️ Read-only Viewer",
+                    desc: "Can view metrics and station availability without edit permissions.",
+                  },
+                ].map((r) => {
+                  const isSelected = selectedRole === r.id;
+                  return (
+                    <label
+                      key={r.id}
+                      onClick={() => setSelectedRole(r.id)}
+                      className={`flex items-start gap-3 p-3 rounded-2xl border cursor-pointer transition-all ${
+                        isSelected
+                          ? "border-brand-orange bg-brand-orange/5 shadow-2xs"
+                          : "hover:bg-neutral-50 dark:hover:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="user_role"
+                        checked={isSelected}
+                        onChange={() => setSelectedRole(r.id)}
+                        className="mt-0.5 text-brand-orange focus:ring-brand-orange"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold" style={{ color: "var(--text)" }}>
+                            {r.title}
+                          </span>
+                          {r.badge && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400">
+                              {r.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-neutral-500 mt-0.5 leading-relaxed">
+                          {r.desc}
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Station picker if BRANCH_ADMIN */}
+            {selectedRole === "BRANCH_ADMIN" && (
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-bold" style={{ color: "var(--text)" }}>
+                  Assign to Station <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedStationId}
+                  onChange={(e) => setSelectedStationId(e.target.value)}
+                  className="w-full rounded-xl border p-2.5 text-xs bg-surface text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                  style={{ borderColor: "var(--border)" }}
+                >
+                  <option value="">Select a station...</option>
+                  {stations.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      TAF {s.branchName} ({s.city})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-200/60 dark:border-neutral-800">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={savingRole}
+                onClick={() => setEditingUser(null)}
+                className="text-xs rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="brand"
+                size="sm"
+                disabled={savingRole}
+                onClick={handleSaveRole}
+                className="text-xs rounded-xl px-5 font-bold"
+              >
+                {savingRole ? "Saving..." : "Save Role"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

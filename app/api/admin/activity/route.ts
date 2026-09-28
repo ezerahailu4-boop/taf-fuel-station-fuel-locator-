@@ -8,7 +8,7 @@ import { listActivity } from "@/services/activityService";
 /** Full audit log (Super Admin / Viewer). Branch admins use /api/branch/activity. */
 export const GET = handle(async (req) => {
   const { actor, ip } = await authContext(req, { write: false });
-  requireRole(actor, "SUPER_ADMIN", "VIEWER");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN", "VIEWER");
   const q = parseQuery(req, activityQuerySchema);
   return json(await listActivity(activityDeps(), actor, q, ip));
 });

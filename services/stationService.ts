@@ -92,7 +92,7 @@ export async function createStation(
   input: StationCreateInput,
   ip: string | null,
 ): Promise<StationDTO> {
-  requireRole(actor, "SUPER_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN");
   const row = await d.stations.create(input);
   await d.activity.log({ actorUserId: actor.id, stationId: row.id, action: "STATION_CREATED", entity: "station", newValue: snapshot(row), ip });
   return (await toDTOs(d, [row]))[0]!;
@@ -105,7 +105,7 @@ export async function updateStation(
   patch: StationUpdateInput,
   ip: string | null,
 ): Promise<StationDTO> {
-  requireRole(actor, "SUPER_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN");
   const before = await d.stations.findById(id);
   if (!before) throw notFound("Station not found");
 
@@ -131,7 +131,7 @@ export async function updateStation(
 }
 
 export async function deleteStation(d: StationServiceDeps, actor: Actor, id: string, ip: string | null): Promise<void> {
-  requireRole(actor, "SUPER_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN");
   const before = await d.stations.findById(id);
   if (!before) throw notFound("Station not found");
 

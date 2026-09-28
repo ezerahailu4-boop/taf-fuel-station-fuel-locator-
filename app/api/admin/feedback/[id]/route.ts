@@ -13,7 +13,7 @@ const patchSchema = z.object({
 
 export const PATCH = handle(async (req, { params }: { params: Promise<{ id: string }> }) => {
   const { actor, ip } = await authContext(req, { write: true });
-  requireRole(actor, "SUPER_ADMIN", "BRANCH_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN", "BRANCH_ADMIN");
 
   const { id } = await params;
   const existing = await feedbackRepository.getById(id);

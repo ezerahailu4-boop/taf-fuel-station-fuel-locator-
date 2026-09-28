@@ -51,14 +51,14 @@ export function AdminApp() {
     );
   }
 
-  if (state.user.role !== "SUPER_ADMIN" && state.user.role !== "VIEWER") {
+  if (state.user.role !== "SUPER_ADMIN" && state.user.role !== "OPERATIONS_ADMIN" && state.user.role !== "VIEWER") {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center p-6 text-center">
         <div className="max-w-md space-y-4 rounded-3xl p-8 border shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <span className="text-4xl">🔒</span>
           <h1 className="text-xl font-bold">Access Restricted</h1>
           <p className="text-sm text-neutral-500">
-            This portal is restricted to Super Administrators and Viewers. Your account is currently signed in as <strong>{state.user.role}</strong>.
+            This portal is restricted to Administrators and Viewers. Your account is currently signed in as <strong>{state.user.role}</strong>.
           </p>
           {state.user.role === "BRANCH_ADMIN" && (
             <a

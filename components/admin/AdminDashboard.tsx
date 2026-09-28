@@ -85,6 +85,14 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  const isOperationsAdmin = user.role === "OPERATIONS_ADMIN";
+
+  useEffect(() => {
+    if (isOperationsAdmin && ["users", "settings", "analytics"].includes(tab)) {
+      setTab("overview");
+    }
+  }, [isOperationsAdmin, tab]);
+
   const fetchOverview = useCallback(async () => {
     try {
       setLoading(true);
@@ -132,7 +140,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
     badge?: number | string | undefined;
   }
 
-  const navItems: NavItem[] = [
+  const allNavItems: NavItem[] = [
     { id: "overview", label: "Overview", icon: DashboardIcon },
     {
       id: "users",
@@ -151,6 +159,13 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
     { id: "settings", label: "Settings", icon: SettingsIcon },
     { id: "audit", label: "Audit Log", icon: AuditIcon },
   ];
+
+  const navItems = allNavItems.filter((item) => {
+    if (isOperationsAdmin) {
+      return ["overview", "feedback", "stations", "fuels", "audit"].includes(item.id);
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-dvh flex flex-col relative overflow-hidden" style={{ background: "var(--bg)" }}>
@@ -736,7 +751,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
           )}
 
           {/* USERS TAB */}
-          {tab === "users" && <UsersManager />}
+          {tab === "users" && <UsersManager stations={data?.stations ?? []} />}
 
           {/* FEEDBACK TAB */}
           {tab === "feedback" && <FeedbackManager stations={data?.stations ?? []} />}

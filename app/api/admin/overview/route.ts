@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/auth/rbac";
 
 export const GET = handle(async (req) => {
   const { actor } = await authContext(req, { write: false });
-  requireRole(actor, "SUPER_ADMIN", "VIEWER");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN", "VIEWER");
   const db = getDb();
 
   try {

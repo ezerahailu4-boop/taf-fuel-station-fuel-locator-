@@ -16,7 +16,7 @@ export async function createFuelType(
   input: Omit<FuelTypeRow, "id">,
   ip: string | null,
 ): Promise<FuelTypeRow> {
-  requireRole(actor, "SUPER_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN");
   const row = await d.fuelTypes.create(input);
   await d.activity.log({ actorUserId: actor.id, stationId: null, action: "FUEL_TYPE_CREATED", entity: "fuel_type", newValue: row, ip });
   return row;
@@ -29,7 +29,7 @@ export async function updateFuelType(
   patch: Partial<Omit<FuelTypeRow, "id">>,
   ip: string | null,
 ): Promise<FuelTypeRow> {
-  requireRole(actor, "SUPER_ADMIN");
+  requireRole(actor, "SUPER_ADMIN", "OPERATIONS_ADMIN");
   const before = await d.fuelTypes.findById(id);
   if (!before) throw notFound("Fuel type not found");
   const after = await d.fuelTypes.update(id, patch);

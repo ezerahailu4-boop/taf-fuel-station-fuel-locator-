@@ -1,6 +1,6 @@
 import { forbidden } from "@/lib/api/errors";
 
-export type Role = "CUSTOMER" | "VIEWER" | "BRANCH_ADMIN" | "SUPER_ADMIN";
+export type Role = "CUSTOMER" | "VIEWER" | "BRANCH_ADMIN" | "OPERATIONS_ADMIN" | "SUPER_ADMIN";
 
 /** The authenticated actor, ALWAYS built from the database, never from client-supplied data. */
 export interface Actor {
@@ -9,7 +9,7 @@ export interface Actor {
   stationId: string | null;
 }
 
-export const STAFF_ROLES: readonly Role[] = ["VIEWER", "BRANCH_ADMIN", "SUPER_ADMIN"];
+export const STAFF_ROLES: readonly Role[] = ["VIEWER", "BRANCH_ADMIN", "OPERATIONS_ADMIN", "SUPER_ADMIN"];
 export const isStaff = (role: Role) => STAFF_ROLES.includes(role);
 
 export function requireRole(actor: Actor, ...allowed: Role[]): void {
@@ -24,6 +24,7 @@ export interface StationAccessOptions {
 /**
  * Branch-level access control.
  *  - SUPER_ADMIN: any station, read + write
+ *  - OPERATIONS_ADMIN: any station, read + write
  *  - BRANCH_ADMIN: only their assigned station, read + write
  *  - VIEWER: any station, read only
  *  - CUSTOMER: none
@@ -31,6 +32,7 @@ export interface StationAccessOptions {
 export function requireStationAccess(actor: Actor, stationId: string, opts: StationAccessOptions): void {
   switch (actor.role) {
     case "SUPER_ADMIN":
+    case "OPERATIONS_ADMIN":
       return;
     case "BRANCH_ADMIN":
       if (actor.stationId !== null && actor.stationId === stationId) return;

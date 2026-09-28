@@ -16,7 +16,7 @@ export const GET = handle(async (req) => {
 
   const where: any = { isActive: true };
 
-  if (role && ["CUSTOMER", "BRANCH_ADMIN", "SUPER_ADMIN", "VIEWER"].includes(role)) {
+  if (role && ["CUSTOMER", "BRANCH_ADMIN", "OPERATIONS_ADMIN", "SUPER_ADMIN", "VIEWER"].includes(role)) {
     where.role = role;
   }
 
