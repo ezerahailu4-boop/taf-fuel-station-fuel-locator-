@@ -36,6 +36,7 @@ import { AnalyticsViewer } from "./AnalyticsViewer";
 import { AuditLogViewer } from "./AuditLogViewer";
 import { UsersManager } from "./UsersManager";
 import { FeedbackManager } from "./FeedbackManager";
+import { OperationsAdminManager } from "./OperationsAdminManager";
 
 export interface OverviewData {
   stats: {
@@ -74,7 +75,7 @@ export interface OverviewData {
   stations: StationItem[];
 }
 
-export type TabId = "overview" | "users" | "feedback" | "stations" | "fuels" | "settings" | "analytics" | "audit";
+export type TabId = "overview" | "users" | "feedback" | "stations" | "fuels" | "settings" | "analytics" | "audit" | "ops-admins";
 
 export function AdminDashboard({ user }: { user: PublicUser }) {
   const { api, logout } = useAuth();
@@ -88,7 +89,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   const isOperationsAdmin = user.role === "OPERATIONS_ADMIN";
 
   useEffect(() => {
-    if (isOperationsAdmin && ["users", "settings", "analytics"].includes(tab)) {
+    if (isOperationsAdmin && ["users", "settings", "analytics", "ops-admins"].includes(tab)) {
       setTab("overview");
     }
   }, [isOperationsAdmin, tab]);
@@ -158,6 +159,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
     { id: "analytics", label: "Analytics", icon: ChartIcon },
     { id: "settings", label: "Settings", icon: SettingsIcon },
     { id: "audit", label: "Audit Log", icon: AuditIcon },
+    { id: "ops-admins", label: "Operations Admins", icon: UsersIcon },
   ];
 
   const navItems = allNavItems.filter((item) => {
@@ -780,6 +782,9 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
           {/* AUDIT LOG TAB */}
           {tab === "audit" && <AuditLogViewer />}
+
+          {/* OPERATIONS ADMINS TAB */}
+          {tab === "ops-admins" && <OperationsAdminManager />}
       </main>
     </div>
   );
