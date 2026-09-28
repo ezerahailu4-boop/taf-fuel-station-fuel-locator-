@@ -35,6 +35,7 @@ import { SettingsManager } from "./SettingsManager";
 import { AnalyticsViewer } from "./AnalyticsViewer";
 import { AuditLogViewer } from "./AuditLogViewer";
 import { UsersManager } from "./UsersManager";
+import { FeedbackManager } from "./FeedbackManager";
 
 export interface OverviewData {
   stats: {
@@ -73,7 +74,7 @@ export interface OverviewData {
   stations: StationItem[];
 }
 
-export type TabId = "overview" | "users" | "stations" | "fuels" | "settings" | "analytics" | "audit";
+export type TabId = "overview" | "users" | "feedback" | "stations" | "fuels" | "settings" | "analytics" | "audit";
 
 export function AdminDashboard({ user }: { user: PublicUser }) {
   const { api, logout } = useAuth();
@@ -138,6 +139,11 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
       label: "Bot Users",
       icon: UsersIcon,
       badge: data?.stats.subscribers.totalUsers,
+    },
+    {
+      id: "feedback",
+      label: "Feedback",
+      icon: MailIcon,
     },
     { id: "stations", label: "Stations", icon: GasStationIcon },
     { id: "fuels", label: "Fuel Types", icon: TagIcon },
@@ -731,6 +737,9 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
           {/* USERS TAB */}
           {tab === "users" && <UsersManager />}
+
+          {/* FEEDBACK TAB */}
+          {tab === "feedback" && <FeedbackManager stations={data?.stations ?? []} />}
 
           {/* STATIONS TAB */}
           {tab === "stations" && (

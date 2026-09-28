@@ -111,6 +111,7 @@
     "home": "Home",
     "map": "Map",
     "stations": "Stations",
+    "feedback": "Feedback",
     "alerts": "Alerts",
     "profile": "Profile"
   },
@@ -212,6 +213,25 @@
     "aboutBody": "TAF Fuel Finder shows the fuel availability reported by TAF stations. Reports come from station staff and can change at any time.",
     "privacy": "Privacy",
     "privacyBody": "Your location is used only on your device for a single nearby search. It is never stored and never tracked."
+  },
+  "feedback": {
+    "title": "Feedback & Support",
+    "subtitle": "Send your feedback or report an issue directly to TAF station management.",
+    "nameLabel": "Your Name (Optional)",
+    "namePlaceholder": "e.g. Abebe Kebede",
+    "contactLabel": "Contact Info (Optional)",
+    "contactPlaceholder": "Telegram @username or phone number",
+    "stationLabel": "Station (Optional)",
+    "generalStation": "General / All Stations",
+    "messageLabel": "Your Message or Issue",
+    "messagePlaceholder": "Describe your experience, report fuel availability issue, station queue, or suggestion...",
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message Sent!",
+    "successBody": "Thank you for reaching out. Your feedback has been forwarded directly to TAF administration.",
+    "sendAnother": "Send another message",
+    "errorEmpty": "Please enter a message before sending.",
+    "errorGeneric": "Could not send message. Please check your connection and try again."
   },
   "state": {
     "offline": "You're offline. Showing stations saved",

@@ -60,3 +60,4 @@ export const otpRequestLimiter = createRateLimiter({ limit: 3, windowMs: 10 * 60
 export const otpVerifyLimiter = createRateLimiter({ limit: 10, windowMs: 10 * 60_000 });
 export const adminWriteLimiter = createRateLimiter({ limit: 60, windowMs: 60_000 });
 export const publicReadLimiter = createRateLimiter({ limit: 120, windowMs: 60_000 });
+export const publicWriteLimiter = createRateLimiter({ limit: 15, windowMs: 60_000 });

@@ -48,6 +48,11 @@ enum DeliveryStatus {
   SKIPPED
 }
 
+enum FeedbackStatus {
+  NEW
+  RESOLVED
+}
+
 model User {
   id              String   @id @default(uuid()) @db.Uuid
   telegramUserId  BigInt   @unique @map("telegram_user_id")
@@ -73,6 +78,7 @@ model User {
   fuelStatusHistory   StationFuelStatusHistory[]
   notificationsCreated Notification[]
   loginCodes          LoginCode[]
+  feedbacks           Feedback[]
 
   @@index([role, isActive])
   @@map("users")
@@ -102,6 +108,7 @@ model Station {
   notifications Notification[]
   activityLogs  ActivityLog[]
   analytics     AnalyticsEvent[]
+  feedbacks     Feedback[]
 
   @@index([city, area])
   @@index([isActive, status])
@@ -310,3 +317,24 @@ model LoginCode {
   @@index([userId, createdAt])
   @@map("login_codes")
 }
+
+model Feedback {
+  id         String         @id @default(uuid()) @db.Uuid
+  userId     String?        @map("user_id") @db.Uuid
+  name       String?
+  contact    String?
+  message    String         @db.Text
+  stationId  String?        @map("station_id") @db.Uuid
+  status     FeedbackStatus @default(NEW)
+  adminNotes String?        @map("admin_notes") @db.Text
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  station Station? @relation(fields: [stationId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([stationId])
+  @@map("feedbacks")
+}
+

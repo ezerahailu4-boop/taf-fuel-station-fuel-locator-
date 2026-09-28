@@ -17,7 +17,7 @@ export class NetworkError extends Error {
 }
 
 export interface ApiOptions {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: unknown;
   token?: string | null;
   signal?: AbortSignal;

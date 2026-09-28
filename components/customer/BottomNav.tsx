@@ -13,12 +13,12 @@ function HomeIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function MapIcon({ className = "" }: { className?: string }) {
+function ChatBubbleIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-      <line x1="9" x2="9" y1="3" y2="18" />
-      <line x1="15" x2="15" y1="6" y2="21" />
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      <path d="M8 9h8" />
+      <path d="M8 13h5" />
     </svg>
   );
 }
@@ -55,8 +55,8 @@ function UserIcon({ className = "" }: { className?: string }) {
 
 const ITEMS = [
   { href: "/", key: "home", Icon: HomeIcon },
-  { href: "/map", key: "map", Icon: MapIcon },
   { href: "/stations", key: "stations", Icon: StationIcon },
+  { href: "/feedback", key: "feedback", Icon: ChatBubbleIcon },
   { href: "/alerts", key: "alerts", Icon: BellIcon },
   { href: "/profile", key: "profile", Icon: UserIcon },
 ] as const;
