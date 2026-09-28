@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { BottomNav } from "@/components/customer/BottomNav";
 import { StationsProvider } from "@/components/customer/StationsProvider";
 import { ThemeSync } from "@/components/customer/ThemeSync";
+
+export const metadata: Metadata = {
+  title: "TAF Nedaj ale",
+};
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 import { LocaleSwitcher } from "@/components/ui/LocaleSwitcher";
 import { NotificationCenter } from "@/components/customer/NotificationCenter";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
@@ -23,6 +24,12 @@ export function PageHeader({
   subtitle?: string;
   back?: { href: string; label: string };
 }) {
+  useEffect(() => {
+    if (title && typeof document !== "undefined") {
+      document.title = title;
+    }
+  }, [title]);
+
   return (
     <header className="sticky top-0 z-30 border-b backdrop-blur-xl transition-colors duration-200" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
       <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
