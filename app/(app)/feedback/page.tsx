@@ -45,7 +45,13 @@ export default function FeedbackPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || t("errorGeneric"));
+        const msg =
+          typeof data.error === "string"
+            ? data.error
+            : data.error?.message ||
+              data.error?.details?.[0]?.message ||
+              t("errorGeneric");
+        throw new Error(msg);
       }
 
       setSubmitted(true);
