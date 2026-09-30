@@ -49,36 +49,36 @@ export function PageHeader({
             </Link>
           ) : (
             <div
-              className="flex shrink-0 items-center gap-2 rounded-2xl border p-1.5 shadow-2xs transition-all hover:scale-[1.02]"
+              className="flex shrink-0 items-center gap-2.5 rounded-2xl border p-1.5 shadow-2xs transition-all hover:scale-[1.01]"
               style={{
                 background: "var(--bg)",
                 borderColor: "var(--border)",
               }}
             >
               {/* TAF Oil Official Emblem */}
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5 dark:bg-neutral-800">
+              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5">
                 <Image
                   src="/brand/taf-logo.webp"
                   alt="TAF"
-                  width={30}
-                  height={30}
+                  width={34}
+                  height={34}
                   priority
-                  className="object-contain"
+                  className="h-full w-full object-contain"
                 />
               </div>
 
               {/* Subtle vertical divider */}
-              <div className="h-6 w-px bg-neutral-300/80 dark:bg-neutral-700/80" />
+              <div className="h-7 w-px bg-neutral-200 dark:bg-neutral-700" />
 
-              {/* Fuel Ale (ነዳጅ አለ) Brand Mark - Enlarged & Clearly Visible */}
-              <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white p-1 shadow-sm ring-1 ring-emerald-500/30 dark:bg-neutral-800 transition-transform">
+              {/* Fuel Ale (ነዳጅ አለ) Brand Mark - Prominently Sized & Crisp White Contrast */}
+              <div className="flex h-13 w-16 sm:h-14 sm:w-18 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-emerald-500/30 transition-transform">
                 <Image
                   src="/brand/fuel-ale-logo.png"
                   alt="ነዳጅ አለ"
-                  width={44}
-                  height={44}
+                  width={72}
+                  height={56}
                   priority
-                  className="object-contain"
+                  className="h-full w-full object-contain"
                 />
               </div>
             </div>
