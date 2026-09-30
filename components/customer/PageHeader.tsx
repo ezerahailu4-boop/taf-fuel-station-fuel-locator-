@@ -20,7 +20,7 @@ export function PageHeader({
   subtitle,
   back,
 }: {
-  title: string;
+  title?: string;
   subtitle?: string;
   back?: { href: string; label: string };
 }) {
@@ -83,22 +83,26 @@ export function PageHeader({
               </div>
             </div>
           )}
-          <div className="min-w-0">
-            <h1
-              className="truncate text-base sm:text-lg font-black tracking-tight leading-tight"
-              style={{ color: "var(--text)" }}
-            >
-              {title}
-            </h1>
-            {subtitle && (
-              <p
-                className="truncate text-[11px] sm:text-xs font-medium"
-                style={{ color: "var(--muted)" }}
-              >
-                {subtitle}
-              </p>
-            )}
-          </div>
+          {(title || subtitle) && (
+            <div className="min-w-0">
+              {title && (
+                <h1
+                  className="truncate text-base sm:text-lg font-black tracking-tight leading-tight"
+                  style={{ color: "var(--text)" }}
+                >
+                  {title}
+                </h1>
+              )}
+              {subtitle && (
+                <p
+                  className="truncate text-[11px] sm:text-xs font-medium"
+                  style={{ color: "var(--muted)" }}
+                >
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">

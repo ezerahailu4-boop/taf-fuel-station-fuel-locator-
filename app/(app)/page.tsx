@@ -52,7 +52,10 @@ export default function HomePage() {
 
   return (
     <main className="pb-12 max-w-lg mx-auto">
+      {/* Commented out per request: TAF Nedaj ale / Find fuel availability near you.
       <PageHeader title={tApp("name")} subtitle={tApp("tagline")} />
+      */}
+      <PageHeader />
 
       {/* Hero Spotlight: Nearest & Available Station */}
       <NearestStationSpotlight />
