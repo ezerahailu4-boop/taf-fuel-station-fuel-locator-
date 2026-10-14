@@ -25,7 +25,7 @@ export function SettingsManager({
     try {
       await apiFetch("/api/admin/settings", {
         method: "PUT",
-        body: JSON.stringify(settings),
+        body: settings,
       });
       setMessage({ type: "success", text: "Enterprise system configuration updated successfully!" });
       onRefresh();

@@ -66,7 +66,12 @@ export async function apiFetch<T>(path: string, opts: ApiOptions = {}): Promise<
         ...(opts.body !== undefined ? { "Content-Type": "application/json" } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body:
+        opts.body !== undefined
+          ? typeof opts.body === "string"
+            ? opts.body
+            : JSON.stringify(opts.body)
+          : undefined,
       credentials: "same-origin",
       signal: opts.signal,
     });
@@ -77,8 +82,10 @@ export async function apiFetch<T>(path: string, opts: ApiOptions = {}): Promise<
 
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const err = (data as { error?: { code?: string; message?: string } } | null)?.error;
-    throw new ApiClientError(res.status, err?.code ?? "ERROR", err?.message ?? "Something went wrong");
+    const err = (data as { error?: { code?: string; message?: string; details?: Array<{ path?: string; message: string }> } } | null)?.error;
+    const detailMsg = err?.details?.map((d) => (d.path ? `${d.path}: ${d.message}` : d.message)).join(", ");
+    const fullMessage = detailMsg ? `${err?.message || "Invalid input"} (${detailMsg})` : (err?.message ?? "Something went wrong");
+    throw new ApiClientError(res.status, err?.code ?? "ERROR", fullMessage);
   }
   return data as T;
 }

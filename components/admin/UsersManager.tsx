@@ -86,10 +86,10 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
     try {
       await apiFetch(`/api/admin/users/${editingUser.id}/role`, {
         method: "PATCH",
-        body: JSON.stringify({
+        body: {
           role: selectedRole,
           stationId: selectedRole === "BRANCH_ADMIN" ? selectedStationId : null,
-        }),
+        },
       });
 
       // Update in local state

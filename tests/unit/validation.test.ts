@@ -28,6 +28,7 @@ describe("station validation", () => {
   it("validates phone numbers and trims text", () => {
     expect(stationCreateSchema.safeParse({ ...validStation, phone: "+251 911 000 000" }).success).toBe(true);
     expect(stationCreateSchema.safeParse({ ...validStation, phone: "<script>" }).success).toBe(false);
+    expect(stationCreateSchema.parse({ ...validStation, phone: "", area: "" })).toMatchObject({ phone: null, area: null });
     expect(stationCreateSchema.parse({ ...validStation, name: "  TAF  " }).name).toBe("TAF");
     expect(stationCreateSchema.safeParse({ ...validStation, name: "   " }).success).toBe(false);
   });

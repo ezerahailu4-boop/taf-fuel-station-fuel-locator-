@@ -57,7 +57,7 @@ export function StationsManager({
     address: "",
     city: "Addis Ababa",
     area: "",
-    phone: "+2519",
+    phone: "",
     latitude: 9.03,
     longitude: 38.74,
     is24h: true,
@@ -81,7 +81,7 @@ export function StationsManager({
       address: "",
       city: "Addis Ababa",
       area: "",
-      phone: "+2519",
+      phone: "",
       latitude: 9.03,
       longitude: 38.74,
       is24h: true,
@@ -113,9 +113,22 @@ export function StationsManager({
     setBusy(true);
     setMessage(null);
     try {
+      const payload = {
+        name: formData.name.trim(),
+        branchName: formData.branchName.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        area: formData.area.trim() || null,
+        phone: formData.phone.trim() || null,
+        latitude: Number(formData.latitude),
+        longitude: Number(formData.longitude),
+        status: formData.status,
+        openingHours: { is24h: true },
+        isActive: true,
+      };
       await apiFetch("/api/admin/stations", {
         method: "POST",
-        body: JSON.stringify(formData),
+        body: payload,
       });
       setMessage({ type: "success", text: `TAF ${formData.branchName} created successfully!` });
       setIsCreating(false);
@@ -133,9 +146,20 @@ export function StationsManager({
     setBusy(true);
     setMessage(null);
     try {
+      const payload = {
+        name: formData.name.trim(),
+        branchName: formData.branchName.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        area: formData.area.trim() || null,
+        phone: formData.phone.trim() || null,
+        latitude: Number(formData.latitude),
+        longitude: Number(formData.longitude),
+        status: formData.status,
+      };
       await apiFetch(`/api/admin/stations/${editingStation.id}`, {
         method: "PUT",
-        body: JSON.stringify(formData),
+        body: payload,
       });
       setMessage({ type: "success", text: `TAF ${formData.branchName} updated successfully!` });
       setEditingStation(null);
@@ -152,7 +176,7 @@ export function StationsManager({
     try {
       await apiFetch(`/api/admin/stations/${s.id}`, {
         method: "PUT",
-        body: JSON.stringify({ isActive: !s.isActive }),
+        body: { isActive: !s.isActive },
       });
       onRefresh();
     } catch (err: unknown) {
@@ -170,7 +194,7 @@ export function StationsManager({
     try {
       await apiFetch(`/api/admin/stations/${assigningStation.id}/admin`, {
         method: "PUT",
-        body: JSON.stringify({ telegramUserId: adminTgId.trim() }),
+        body: { telegramUserId: adminTgId.trim() },
       });
       setMessage({ type: "success", text: `Branch Manager assigned to TAF ${assigningStation.branchName}!` });
       setAssigningStation(null);
@@ -488,6 +512,7 @@ export function StationsManager({
                     <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Phone</span>
                     <input
                       type="tel"
+                      placeholder="e.g. +251 911 000 000"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       className={inputClass}

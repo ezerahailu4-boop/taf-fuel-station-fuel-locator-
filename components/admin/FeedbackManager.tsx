@@ -81,7 +81,7 @@ export function FeedbackManager({ stations = [] }: { stations?: StationItem[] })
     try {
       await apiFetch(`/api/admin/feedback/${item.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status: newStatus }),
+        body: { status: newStatus },
       });
       setFeedbacks((prev) =>
         prev.map((f) => (f.id === item.id ? { ...f, status: newStatus } : f))

@@ -26,13 +26,24 @@ const phone = z
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
+const optionalText = (max: number) =>
+  z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    text(max).nullish(),
+  );
+
+const optionalPhone = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  phone.nullish(),
+);
+
 export const stationFields = {
   name: text(120),
   branchName: text(120),
   address: text(300),
   city: text(80),
-  area: text(80).nullish(),
-  phone: phone.nullish(),
+  area: optionalText(80),
+  phone: optionalPhone,
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   openingHours: openingHoursSchema,
