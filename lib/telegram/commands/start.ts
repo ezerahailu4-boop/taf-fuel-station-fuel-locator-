@@ -95,11 +95,11 @@ export async function handleStartCommand(
       [
         {
           text: isAmharic ? "⛽ ቤንዚን (Benzine)" : "⛽ Benzine",
-          web_app: { url: `${appUrl}?fuel=benzine` },
+          web_app: { url: `${appUrl}/nearest?fuel=benzine` },
         },
         {
           text: isAmharic ? "⛽ ናፍጣ (Diesel)" : "⛽ Diesel",
-          web_app: { url: `${appUrl}?fuel=diesel` },
+          web_app: { url: `${appUrl}/nearest?fuel=diesel` },
         },
       ],
       [

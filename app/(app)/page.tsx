@@ -66,8 +66,10 @@ export default function HomePage() {
     [stations],
   );
 
-  const fuelName = effectiveFuels.find((f) => f.slug === selectedFuel);
-  const goNearest = () => router.push("/nearest");
+  const handleFuelSelect = (slug: string) => {
+    setSelectedFuel(slug);
+    router.push(`/nearest?fuel=${slug}`);
+  };
 
   return (
     <main className="pb-12 max-w-lg mx-auto">
@@ -98,7 +100,7 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* ⛽ Benzine & ⛽ Diesel Quick Select Cards - Short & Compact */}
+          {/* ⛽ Benzine & ⛽ Diesel Quick Select Cards - Automatically shows nearest */}
           <div className="grid grid-cols-2 gap-2">
             {effectiveFuels.map((f) => {
               const active = selectedFuel === f.slug;
@@ -107,7 +109,7 @@ export default function HomePage() {
                   key={f.slug}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => setSelectedFuel(active ? null : f.slug)}
+                  onClick={() => handleFuelSelect(f.slug)}
                   className={`group relative flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-center transition-all duration-150 active:scale-95 cursor-pointer border ${
                     active
                       ? "bg-gradient-to-br from-amber-400 via-brand-orange to-orange-500 text-neutral-950 border-amber-400 shadow-xs ring-1 ring-brand-orange/40"
@@ -135,21 +137,6 @@ export default function HomePage() {
               );
             })}
           </div>
-
-          {/* Direct CTA when fuel is picked */}
-          {fuelName && (
-            <div className="mt-2">
-              <button
-                type="button"
-                onClick={goNearest}
-                className="flex min-h-[34px] w-full items-center justify-center gap-1.5 rounded-xl bg-brand-orange/10 border border-brand-orange/25 px-3 text-[11px] font-black text-brand-orange transition hover:bg-brand-orange/20 active:scale-95 cursor-pointer"
-              >
-                <CompassIcon className="h-3.5 w-3.5" />
-                <span>{t("findNearest", { fuel: locale === "am" ? fuelName.nameAm : fuelName.nameEn })}</span>
-                <span>→</span>
-              </button>
-            </div>
-          )}
         </div>
       </section>
 

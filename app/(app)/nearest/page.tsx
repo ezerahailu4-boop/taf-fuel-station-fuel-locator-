@@ -25,6 +25,14 @@ export default function NearestPage() {
   const [search, setSearch] = useState<Search>({ status: "idle" });
   const [nonce, setNonce] = useState(0);
 
+  // Sync with ?fuel= URL parameter
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("fuel");
+      if (p) setSelectedFuel(p);
+    }
+  }, [setSelectedFuel]);
+
   // Default to the first fuel type so a result is always shown once a location is known.
   const fuel = selectedFuel ?? fuelTypes[0]?.slug ?? null;
   useEffect(() => {
@@ -62,13 +70,26 @@ export default function NearestPage() {
 
   return (
     <main>
-      <PageHeader title={t("title")} />
+      <PageHeader title={t("title")} back={{ href: "/", label: "Home" }} />
       <OfflineBanner />
       <p className="mb-2 px-4 text-sm font-semibold">{t("fuelLabel")}</p>
       <FuelChips fuelTypes={fuelTypes} value={fuel} onChange={setSelectedFuel} />
 
       <div className="mt-4 space-y-4">
         {!location && <LocationPrompt />}
+
+        {!location && stations.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="px-4 text-base font-bold">{t("nearestAvailable", { fuel: fuelLabel })}</h2>
+            <div className="grid gap-3 px-4 md:grid-cols-2">
+              {stations
+                .filter((s) => s.fuels.some((f) => f.slug === fuel && (f.status === "AVAILABLE" || f.status === "LIMITED")))
+                .map((s) => (
+                  <StationCard key={s.id} station={s} distanceKm={null} />
+                ))}
+            </div>
+          </section>
+        )}
 
         {location && (
           <div className="mx-4 flex items-center justify-between gap-3 rounded-2xl px-4 py-3 ring-1 ring-black/5" style={{ background: "var(--surface)" }}>

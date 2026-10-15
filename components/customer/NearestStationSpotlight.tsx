@@ -51,6 +51,17 @@ export function NearestStationSpotlight() {
 
   if (status === "loading" || !nearest) return null;
 
+  const displayFuels = useMemo(() => {
+    if (!selectedFuel) return nearest.fuels;
+    const filtered = nearest.fuels.filter(
+      (f) =>
+        f.slug === selectedFuel ||
+        f.nameEn.toLowerCase().includes(selectedFuel) ||
+        f.nameAm.includes(selectedFuel === "benzine" ? "ቤንዚን" : "ናፍጣ"),
+    );
+    return filtered.length > 0 ? filtered : nearest.fuels;
+  }, [nearest.fuels, selectedFuel]);
+
   const directions = directionsLinks(nearest.latitude, nearest.longitude, `TAF ${nearest.branchName}`);
   const primaryNav = directions[0]?.url;
 
@@ -112,7 +123,7 @@ export function NearestStationSpotlight() {
 
       {/* Live Fuels Grid */}
       <div className="relative z-10 mt-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-        {nearest.fuels.map((fuel) => {
+        {displayFuels.map((fuel) => {
           const isAvail = fuel.status === "AVAILABLE";
           const isLimited = fuel.status === "LIMITED";
           const isMatched =
