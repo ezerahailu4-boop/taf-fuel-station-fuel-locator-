@@ -33,7 +33,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "TELEGRAM_BOT_TOKEN not configured" }, { status: 500 });
   }
 
-  const appUrl = process.env.TELEGRAM_MINI_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const rawUrl = process.env.TELEGRAM_MINI_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "";
+  const appUrl = (rawUrl && !rawUrl.includes("localhost") && !rawUrl.includes("127.0.0.1")
+    ? rawUrl
+    : "https://taf-fuel-station-fuel-locator.vercel.app").replace(/\/$/, "");
 
   // Pull pending deliveries
   const deliveries = await notificationRepository.getPendingDeliveries(BATCH_SIZE);

@@ -15,14 +15,17 @@ function verifySecretToken(headerToken: string | null, secret: string | undefine
 
 export async function POST(req: NextRequest) {
   const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
-  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET || "taf_fuel_secret_webhook_key_2026_secure";
 
   if (!verifySecretToken(secretHeader, expectedSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const appUrl = process.env.TELEGRAM_MINI_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || "8837896206:AAEZjh_QyBOvNJTfRFue2hrhQ4hrsJ0LPKM";
+  const rawUrl = process.env.TELEGRAM_MINI_APP_URL || process.env.NEXT_PUBLIC_APP_URL || "";
+  const appUrl = (rawUrl && !rawUrl.includes("localhost") && !rawUrl.includes("127.0.0.1")
+    ? rawUrl
+    : "https://taf-fuel-station-fuel-locator.vercel.app").replace(/\/$/, "");
 
   if (!botToken) {
     console.error("[telegram-webhook] TELEGRAM_BOT_TOKEN is not configured");
