@@ -23,7 +23,12 @@ function browserLocation(timeoutMs: number): Promise<LatLng> {
 
 /** Telegram's LocationManager (Bot API 8.0+). Resolves null when it can't be used, so the caller falls back to the browser API. */
 function telegramLocation(timeoutMs: number): Promise<LatLng | "denied" | null> {
-  const lm = window.Telegram?.WebApp?.LocationManager;
+  const tg = window.Telegram?.WebApp as any;
+  if (!tg) return Promise.resolve(null);
+  if (typeof tg.isVersionAtLeast === "function" && !tg.isVersionAtLeast("8.0")) {
+    return Promise.resolve(null);
+  }
+  const lm = tg.LocationManager;
   if (!lm) return Promise.resolve(null);
   return new Promise((resolve) => {
     let done = false;
@@ -37,7 +42,7 @@ function telegramLocation(timeoutMs: number): Promise<LatLng | "denied" | null> 
     try {
       lm.init(() => {
         if (!lm.isLocationAvailable) return finish(null);
-        lm.getLocation((loc) => finish(loc ? { lat: loc.latitude, lng: loc.longitude } : "denied"));
+        lm.getLocation((loc: { latitude: number; longitude: number } | null) => finish(loc ? { lat: loc.latitude, lng: loc.longitude } : "denied"));
       });
     } catch {
       finish(null);

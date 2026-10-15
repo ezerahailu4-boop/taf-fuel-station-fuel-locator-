@@ -12,6 +12,7 @@ import { useStations } from "@/components/customer/StationsProvider";
 import { ErrorState, OfflineBanner, SafetyNote, StationListSkeleton } from "@/components/customer/StateViews";
 import { trackEvent } from "@/lib/client/analytics";
 import { haversineKm } from "@/lib/geo/haversine";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import type { FuelTypeRow } from "@/types/stations";
 
 function SearchIcon({ className = "" }: { className?: string }) {
@@ -141,7 +142,9 @@ export default function HomePage() {
       </section>
 
       {/* Hero Spotlight: Nearest & Available Station */}
-      <NearestStationSpotlight />
+      <ErrorBoundary>
+        <NearestStationSpotlight />
+      </ErrorBoundary>
 
       {/* Modern Search Bar */}
       <section className="px-4 mt-3">

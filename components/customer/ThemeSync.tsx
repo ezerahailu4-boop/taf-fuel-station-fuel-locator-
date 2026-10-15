@@ -9,18 +9,26 @@ export function ThemeSync() {
   const { theme } = useTheme();
 
   useEffect(() => {
-    const tg = typeof window !== "undefined" ? (window.Telegram?.WebApp as any) : undefined;
-    if (!tg) return;
+    try {
+      const tg = typeof window !== "undefined" ? (window.Telegram?.WebApp as any) : undefined;
+      if (!tg) return;
 
-    if (theme === "taf") {
-      tg.setHeaderColor?.("#1e1812");
-      tg.setBackgroundColor?.("#14110e");
-    } else if (theme === "dark") {
-      tg.setHeaderColor?.("#171a21");
-      tg.setBackgroundColor?.("#0f1115");
-    } else {
-      tg.setHeaderColor?.("#ffffff");
-      tg.setBackgroundColor?.("#fafafa");
+      if (typeof tg.isVersionAtLeast === "function" && !tg.isVersionAtLeast("6.1")) {
+        return;
+      }
+
+      if (theme === "taf") {
+        tg.setHeaderColor?.("#1e1812");
+        tg.setBackgroundColor?.("#14110e");
+      } else if (theme === "dark") {
+        tg.setHeaderColor?.("#171a21");
+        tg.setBackgroundColor?.("#0f1115");
+      } else {
+        tg.setHeaderColor?.("#ffffff");
+        tg.setBackgroundColor?.("#fafafa");
+      }
+    } catch {
+      // Silently ignore if unsupported
     }
   }, [theme]);
 

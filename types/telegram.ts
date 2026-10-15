@@ -11,9 +11,11 @@ export interface TelegramLocationManager {
 
 export interface TelegramWebApp {
   initData: string;
+  version?: string;
   colorScheme?: "light" | "dark";
   ready(): void;
   expand(): void;
+  isVersionAtLeast?(version: string): boolean;
   setHeaderColor?(color: string): void;
   setBackgroundColor?(color: string): void;
   openLink?(url: string, opts?: { try_instant_view?: boolean }): void;
@@ -25,9 +27,11 @@ export interface TelegramWebApp {
 declare global {
   interface TelegramWebApp {
     initData: string;
+    version?: string;
     colorScheme?: "light" | "dark";
     ready(): void;
     expand(): void;
+    isVersionAtLeast?(version: string): boolean;
     setHeaderColor?(color: string): void;
     setBackgroundColor?(color: string): void;
     openLink?(url: string, opts?: { try_instant_view?: boolean }): void;

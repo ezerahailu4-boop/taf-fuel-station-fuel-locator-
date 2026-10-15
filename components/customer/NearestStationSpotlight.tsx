@@ -49,9 +49,8 @@ export function NearestStationSpotlight() {
     return haversineKm(location, { lat: nearest.latitude, lng: nearest.longitude });
   }, [location, nearest]);
 
-  if (status === "loading" || !nearest) return null;
-
   const displayFuels = useMemo(() => {
+    if (!nearest) return [];
     if (!selectedFuel) return nearest.fuels;
     const filtered = nearest.fuels.filter(
       (f) =>
@@ -60,7 +59,9 @@ export function NearestStationSpotlight() {
         f.nameAm.includes(selectedFuel === "benzine" ? "ቤንዚን" : "ናፍጣ"),
     );
     return filtered.length > 0 ? filtered : nearest.fuels;
-  }, [nearest.fuels, selectedFuel]);
+  }, [nearest, selectedFuel]);
+
+  if (status === "loading" || !nearest) return null;
 
   const directions = directionsLinks(nearest.latitude, nearest.longitude, `TAF ${nearest.branchName}`);
   const primaryNav = directions[0]?.url;
