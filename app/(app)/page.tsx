@@ -76,30 +76,30 @@ export default function HomePage() {
       */}
       <PageHeader />
 
-      {/* Top of Mini App: Which fuel do you need? */}
-      <section className="px-4 mt-3">
+      {/* Top of Mini App: Which fuel do you need? (Compact & sleek) */}
+      <section className="px-4 mt-2">
         <div
-          className="rounded-3xl border p-4 shadow-sm transition-all"
+          className="rounded-2xl border px-3 py-2.5 shadow-2xs transition-all"
           style={{ background: "var(--surface)", borderColor: "var(--border)" }}
         >
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-600 dark:text-neutral-300 flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-brand-orange animate-pulse" />
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-brand-orange" />
               <span>{t("fuelTitle")}</span>
             </h2>
             {selectedFuel && (
               <button
                 type="button"
                 onClick={() => setSelectedFuel(null)}
-                className="text-[11px] font-bold text-brand-orange hover:underline cursor-pointer"
+                className="text-[10px] font-bold text-brand-orange hover:underline cursor-pointer"
               >
-                {locale === "am" ? "ሁሉንም አሳይ" : "Reset filter"}
+                {locale === "am" ? "ሁሉንም አሳይ" : "Reset"}
               </button>
             )}
           </div>
 
-          {/* ⛽ Benzine & ⛽ Diesel Quick Select Cards */}
-          <div className="grid grid-cols-2 gap-2.5">
+          {/* ⛽ Benzine & ⛽ Diesel Quick Select Cards - Short & Compact */}
+          <div className="grid grid-cols-2 gap-2">
             {effectiveFuels.map((f) => {
               const active = selectedFuel === f.slug;
               return (
@@ -108,30 +108,28 @@ export default function HomePage() {
                   type="button"
                   aria-pressed={active}
                   onClick={() => setSelectedFuel(active ? null : f.slug)}
-                  className={`group relative flex flex-col items-center justify-center rounded-2xl py-3.5 px-3 text-center transition-all duration-200 active:scale-95 cursor-pointer border ${
+                  className={`group relative flex items-center justify-center gap-2 rounded-xl py-2 px-3 text-center transition-all duration-150 active:scale-95 cursor-pointer border ${
                     active
-                      ? "bg-gradient-to-br from-amber-400 via-brand-orange to-orange-500 text-neutral-950 border-amber-400 shadow-md ring-2 ring-brand-orange/40"
-                      : "border-neutral-200/80 dark:border-neutral-800 hover:border-brand-orange/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                      ? "bg-gradient-to-br from-amber-400 via-brand-orange to-orange-500 text-neutral-950 border-amber-400 shadow-xs ring-1 ring-brand-orange/40"
+                      : "border-neutral-200/80 dark:border-neutral-800 hover:border-brand-orange/40 hover:bg-neutral-50 dark:hover:bg-neutral-800/40"
                   }`}
                   style={active ? undefined : { background: "var(--bg)", color: "var(--text)" }}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl" aria-hidden>⛽</span>
-                    <span className="text-base sm:text-lg font-black tracking-tight">
+                  <span className="text-lg shrink-0" aria-hidden>⛽</span>
+                  <div className="min-w-0 text-left leading-none">
+                    <span className="block text-xs sm:text-sm font-black tracking-tight leading-tight truncate">
                       {locale === "am" ? f.nameAm : f.nameEn}
                     </span>
-                  </div>
-                  <span
-                    className={`mt-0.5 text-[11px] font-semibold ${
-                      active ? "text-neutral-900/85" : "text-neutral-500 dark:text-neutral-400"
-                    }`}
-                  >
-                    {locale === "am" ? f.nameEn : f.nameAm}
-                  </span>
-                  {active && (
-                    <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-950" />
+                    <span
+                      className={`block text-[9px] font-medium leading-none mt-0.5 truncate ${
+                        active ? "text-neutral-900/80" : "text-neutral-400 dark:text-neutral-500"
+                      }`}
+                    >
+                      {locale === "am" ? f.nameEn : f.nameAm}
                     </span>
+                  </div>
+                  {active && (
+                    <span className="ml-auto flex h-1.5 w-1.5 shrink-0 rounded-full bg-neutral-950" />
                   )}
                 </button>
               );
@@ -140,13 +138,13 @@ export default function HomePage() {
 
           {/* Direct CTA when fuel is picked */}
           {fuelName && (
-            <div className="mt-3">
+            <div className="mt-2">
               <button
                 type="button"
                 onClick={goNearest}
-                className="flex min-h-[42px] w-full items-center justify-center gap-2 rounded-2xl bg-brand-orange/10 border border-brand-orange/30 px-4 text-xs font-black text-brand-orange transition hover:bg-brand-orange/20 active:scale-95 cursor-pointer"
+                className="flex min-h-[34px] w-full items-center justify-center gap-1.5 rounded-xl bg-brand-orange/10 border border-brand-orange/25 px-3 text-[11px] font-black text-brand-orange transition hover:bg-brand-orange/20 active:scale-95 cursor-pointer"
               >
-                <CompassIcon className="h-4 w-4" />
+                <CompassIcon className="h-3.5 w-3.5" />
                 <span>{t("findNearest", { fuel: locale === "am" ? fuelName.nameAm : fuelName.nameEn })}</span>
                 <span>→</span>
               </button>
