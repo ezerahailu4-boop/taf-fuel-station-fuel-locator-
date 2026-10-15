@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // Telegram embeds the Mini App in its own webview; frame-ancestors is refined in Phase 6.
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self' https://web.telegram.org https://*.telegram.org https://telegram.org https://*.t.me http://localhost:*;" },
         ],
       },
     ];
