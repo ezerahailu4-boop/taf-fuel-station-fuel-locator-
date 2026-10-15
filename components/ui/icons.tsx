@@ -184,3 +184,22 @@ export function SlidersIcon({ className = "w-4 h-4", ...props }: React.SVGProps<
   );
 }
 
+export function MegaphoneIcon({ className = "w-4 h-4", ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m3 11 18-5v12L3 14v-3z" />
+      <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+    </svg>
+  );
+}
+
+export function SendIcon({ className = "w-4 h-4", ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+
+

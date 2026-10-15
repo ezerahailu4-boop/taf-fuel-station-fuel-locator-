@@ -27,6 +27,7 @@ import {
   ArrowUpRightIcon,
   MailIcon,
   SparklesIcon,
+  MegaphoneIcon,
 } from "@/components/ui/icons";
 import type { PublicUser } from "@/types/auth";
 import { StationsManager, type StationItem } from "./StationsManager";
@@ -37,6 +38,7 @@ import { AuditLogViewer } from "./AuditLogViewer";
 import { UsersManager } from "./UsersManager";
 import { FeedbackManager } from "./FeedbackManager";
 import { OperationsAdminManager } from "./OperationsAdminManager";
+import { BroadcastManager } from "./BroadcastManager";
 
 export interface OverviewData {
   stats: {
@@ -75,7 +77,7 @@ export interface OverviewData {
   stations: StationItem[];
 }
 
-export type TabId = "overview" | "users" | "feedback" | "stations" | "fuels" | "settings" | "analytics" | "audit" | "ops-admins";
+export type TabId = "overview" | "users" | "feedback" | "broadcast" | "stations" | "fuels" | "settings" | "analytics" | "audit" | "ops-admins";
 
 export function AdminDashboard({ user }: { user: PublicUser }) {
   const { api, logout } = useAuth();
@@ -154,6 +156,11 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
       label: "Feedback",
       icon: MailIcon,
     },
+    {
+      id: "broadcast",
+      label: "Broadcast Messages",
+      icon: MegaphoneIcon,
+    },
     { id: "stations", label: "Stations", icon: GasStationIcon },
     { id: "fuels", label: "Fuel Types", icon: TagIcon },
     { id: "analytics", label: "Analytics", icon: ChartIcon },
@@ -164,7 +171,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
   const navItems = allNavItems.filter((item) => {
     if (isOperationsAdmin) {
-      return ["overview", "feedback", "stations", "fuels", "audit"].includes(item.id);
+      return ["overview", "feedback", "broadcast", "stations", "fuels", "audit"].includes(item.id);
     }
     return true;
   });
@@ -795,6 +802,9 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
           {/* FEEDBACK TAB */}
           {tab === "feedback" && <FeedbackManager stations={data?.stations ?? []} />}
+
+          {/* BROADCAST TAB */}
+          {tab === "broadcast" && <BroadcastManager stations={data?.stations ?? []} />}
 
           {/* STATIONS TAB */}
           {tab === "stations" && (
