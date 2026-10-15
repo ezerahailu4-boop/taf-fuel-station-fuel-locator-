@@ -63,8 +63,8 @@ export async function handleStartCommand(
   }
 
   const text = (isAmharic
-    ? `👋 ሰላም ${name}!\n\nወደ **ታፍ ነዳጅ ፈላጊ (TAF Fuel Finder)** እንኳን በደህና መጡ።\n\nበዚህ ቦት በመጠቀም፦\n• በአቅራቢያዎ የሚገኙ የTAF ማደያዎችን ማግኘት ይችላሉ\n• ቤንዚን ወይም ናፍጣ መኖሩን በቀጥታ መከታተል ይችላሉ\n• ነዳጅ ሲመጣ ፈጣን የቴሌግራም መልዕክት ይደርስዎታል\n\n*ማሳሰቢያ፦ መረጃው በማደያዎች የተዘገበ ወቅታዊ የነዳጅ ሁኔታ ነው። ሁኔታዎች በማንኛውም ጊዜ ሊለወጡ ይችላሉ።*`
-    : `👋 Hello ${name}!\n\nWelcome to **TAF Fuel Finder**.\n\nWith this bot, you can:\n• Find TAF stations near you\n• Check real-time reported availability for Benzine and Diesel\n• Subscribe to alerts when fuel arrives at your favorite station\n\n*Note: Reported availability. Fuel availability can change at any time.*`) + adminNote;
+    ? `👋 ሰላም ${name}!\n\nወደ **ታፍ ነዳጅ ፈላጊ (TAF Fuel Finder)** እንኳን በደህና መጡ።\n\n**የትኛውን ነዳጅ ይፈልጋሉ?**\n⛽ ቤንዚን (Benzine)\n⛽ ናፍጣ (Diesel)\n\nበዚህ ቦት በመጠቀም፦\n• በአቅራቢያዎ የሚገኙ የTAF ማደያዎችን ማግኘት ይችላሉ\n• ቤንዚን ወይም ናፍጣ መኖሩን በቀጥታ መከታተል ይችላሉ\n• ነዳጅ ሲመጣ ፈጣን የቴሌግራም መልዕክት ይደርስዎታል\n\n*ማሳሰቢያ፦ መረጃው በማደያዎች የተዘገበ ወቅታዊ የነዳጅ ሁኔታ ነው። ሁኔታዎች በማንኛውም ጊዜ ሊለወጡ ይችላሉ።*`
+    : `👋 Hello ${name}!\n\nWelcome to **TAF Fuel Finder**.\n\n**Which fuel do you need?**\n⛽ Benzine\n⛽ Diesel\n\nWith this bot, you can:\n• Find TAF stations near you\n• Check real-time reported availability for Benzine and Diesel\n• Subscribe to alerts when fuel arrives at your favorite station\n\n*Note: Reported availability. Fuel availability can change at any time.*`) + adminNote;
 
   const replyMarkup: TelegramInlineKeyboardMarkup = {
     inline_keyboard: [
@@ -92,6 +92,16 @@ export async function handleStartCommand(
             ],
           ]
         : []),
+      [
+        {
+          text: isAmharic ? "⛽ ቤንዚን (Benzine)" : "⛽ Benzine",
+          web_app: { url: `${appUrl}?fuel=benzine` },
+        },
+        {
+          text: isAmharic ? "⛽ ናፍጣ (Diesel)" : "⛽ Diesel",
+          web_app: { url: `${appUrl}?fuel=diesel` },
+        },
+      ],
       [
         {
           text: isAmharic ? "🚀 መተግበሪያውን ክፈት (Open Mini App)" : "🚀 Open TAF Mini App",

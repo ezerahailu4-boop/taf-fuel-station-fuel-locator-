@@ -12,6 +12,7 @@ import { useStations } from "@/components/customer/StationsProvider";
 import { ErrorState, OfflineBanner, SafetyNote, StationListSkeleton } from "@/components/customer/StateViews";
 import { trackEvent } from "@/lib/client/analytics";
 import { haversineKm } from "@/lib/geo/haversine";
+import type { FuelTypeRow } from "@/types/stations";
 
 function SearchIcon({ className = "" }: { className?: string }) {
   return (
@@ -31,6 +32,11 @@ function CompassIcon({ className = "" }: { className?: string }) {
   );
 }
 
+const FALLBACK_FUELS: FuelTypeRow[] = [
+  { id: "f-benzine", slug: "benzine", nameEn: "Benzine", nameAm: "ቤንዚን", icon: "⛽", isActive: true, displayOrder: 1 },
+  { id: "f-diesel", slug: "diesel", nameEn: "Diesel", nameAm: "ናፍጣ", icon: "⛽", isActive: true, displayOrder: 2 },
+];
+
 export default function HomePage() {
   const t = useTranslations("home");
   const tApp = useTranslations("app");
@@ -42,12 +48,25 @@ export default function HomePage() {
 
   useEffect(() => trackEvent({ event: "app_open" }), []);
 
+  // Sync with ?fuel= URL parameter (e.g. from Telegram bot direct links)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("fuel");
+      if (p) setSelectedFuel(p);
+    }
+  }, [setSelectedFuel]);
+
+  const effectiveFuels = useMemo(() => {
+    const active = fuelTypes.filter((f) => f.isActive !== false);
+    return active.length > 0 ? active : FALLBACK_FUELS;
+  }, [fuelTypes]);
+
   const recent = useMemo(
     () => [...stations].filter((s) => s.lastUpdated).sort((a, b) => (b.lastUpdated! > a.lastUpdated! ? 1 : -1)).slice(0, 3),
     [stations],
   );
 
-  const fuelName = fuelTypes.find((f) => f.slug === selectedFuel);
+  const fuelName = effectiveFuels.find((f) => f.slug === selectedFuel);
   const goNearest = () => router.push("/nearest");
 
   return (
@@ -56,6 +75,85 @@ export default function HomePage() {
       <PageHeader title={tApp("name")} subtitle={tApp("tagline")} />
       */}
       <PageHeader />
+
+      {/* Top of Mini App: Which fuel do you need? */}
+      <section className="px-4 mt-3">
+        <div
+          className="rounded-3xl border p-4 shadow-sm transition-all"
+          style={{ background: "var(--surface)", borderColor: "var(--border)" }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-600 dark:text-neutral-300 flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-brand-orange animate-pulse" />
+              <span>{t("fuelTitle")}</span>
+            </h2>
+            {selectedFuel && (
+              <button
+                type="button"
+                onClick={() => setSelectedFuel(null)}
+                className="text-[11px] font-bold text-brand-orange hover:underline cursor-pointer"
+              >
+                {locale === "am" ? "ሁሉንም አሳይ" : "Reset filter"}
+              </button>
+            )}
+          </div>
+
+          {/* ⛽ Benzine & ⛽ Diesel Quick Select Cards */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {effectiveFuels.map((f) => {
+              const active = selectedFuel === f.slug;
+              return (
+                <button
+                  key={f.slug}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setSelectedFuel(active ? null : f.slug)}
+                  className={`group relative flex flex-col items-center justify-center rounded-2xl py-3.5 px-3 text-center transition-all duration-200 active:scale-95 cursor-pointer border ${
+                    active
+                      ? "bg-gradient-to-br from-amber-400 via-brand-orange to-orange-500 text-neutral-950 border-amber-400 shadow-md ring-2 ring-brand-orange/40"
+                      : "border-neutral-200/80 dark:border-neutral-800 hover:border-brand-orange/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+                  }`}
+                  style={active ? undefined : { background: "var(--bg)", color: "var(--text)" }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl" aria-hidden>⛽</span>
+                    <span className="text-base sm:text-lg font-black tracking-tight">
+                      {locale === "am" ? f.nameAm : f.nameEn}
+                    </span>
+                  </div>
+                  <span
+                    className={`mt-0.5 text-[11px] font-semibold ${
+                      active ? "text-neutral-900/85" : "text-neutral-500 dark:text-neutral-400"
+                    }`}
+                  >
+                    {locale === "am" ? f.nameEn : f.nameAm}
+                  </span>
+                  {active && (
+                    <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-neutral-950" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Direct CTA when fuel is picked */}
+          {fuelName && (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={goNearest}
+                className="flex min-h-[42px] w-full items-center justify-center gap-2 rounded-2xl bg-brand-orange/10 border border-brand-orange/30 px-4 text-xs font-black text-brand-orange transition hover:bg-brand-orange/20 active:scale-95 cursor-pointer"
+              >
+                <CompassIcon className="h-4 w-4" />
+                <span>{t("findNearest", { fuel: locale === "am" ? fuelName.nameAm : fuelName.nameEn })}</span>
+                <span>→</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Hero Spotlight: Nearest & Available Station */}
       <NearestStationSpotlight />
@@ -90,26 +188,6 @@ export default function HomePage() {
           </button>
         </form>
       </section>
-
-      {/* Fuel Types Quick Selection */}
-      <div className="mt-5">
-        <h2 className="mb-2 px-4 text-xs font-black uppercase tracking-wider text-neutral-500">
-          {t("fuelTitle")}
-        </h2>
-        <FuelChips fuelTypes={fuelTypes} value={selectedFuel} onChange={setSelectedFuel} />
-        {fuelName && (
-          <div className="px-4 pt-3">
-            <button
-              onClick={goNearest}
-              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-2xl border px-4 text-xs font-bold transition hover:bg-neutral-500/10 active:scale-95 cursor-pointer shadow-2xs"
-              style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-            >
-              <CompassIcon className="h-4 w-4 text-brand-orange" />
-              <span>{t("findNearest", { fuel: locale === "am" ? fuelName.nameAm : fuelName.nameEn })}</span>
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* Recent Stations Activity */}
       <div className="mt-6">

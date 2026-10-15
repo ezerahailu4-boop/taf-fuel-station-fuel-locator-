@@ -15,23 +15,34 @@ export function NearestStationSpotlight() {
   const t = useTranslations("station");
   const c = useTranslations("common");
   const locale = useLocale();
-  const { stations, location, locationStatus, requestLocation, status } = useStations();
+  const { stations, location, locationStatus, requestLocation, status, selectedFuel } = useStations();
 
   const nearest = useMemo(() => {
     if (stations.length === 0) return null;
+
+    const matchesFuel = (s: StationDTO) => {
+      if (!selectedFuel) {
+        return s.fuels.some((f) => f.status === "AVAILABLE" || f.status === "LIMITED");
+      }
+      return s.fuels.some(
+        (f) =>
+          (f.slug === selectedFuel || f.nameEn.toLowerCase().includes(selectedFuel)) &&
+          (f.status === "AVAILABLE" || f.status === "LIMITED"),
+      );
+    };
+
     if (!location) {
-      return stations.find((s) => s.status === "OPEN") ?? stations[0] ?? null;
+      const match = stations.find((s) => s.status === "OPEN" && matchesFuel(s));
+      return match ?? stations.find((s) => s.status === "OPEN") ?? stations[0] ?? null;
     }
     const withDist = stations.map((s) => ({
       station: s,
       dist: haversineKm(location, { lat: s.latitude, lng: s.longitude }),
     }));
     withDist.sort((a, b) => a.dist - b.dist);
-    const openWithFuel = withDist.find(
-      (x) => x.station.status === "OPEN" && x.station.fuels.some((f) => f.status === "AVAILABLE" || f.status === "LIMITED"),
-    );
+    const openWithFuel = withDist.find((x) => x.station.status === "OPEN" && matchesFuel(x.station));
     return openWithFuel ? openWithFuel.station : withDist[0]?.station ?? null;
-  }, [stations, location]);
+  }, [stations, location, selectedFuel]);
 
   const distanceKm = useMemo(() => {
     if (!location || !nearest) return null;
@@ -57,7 +68,11 @@ export function NearestStationSpotlight() {
             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
           </span>
           <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-            Nearest & Available
+            {selectedFuel
+              ? locale === "am"
+                ? `${selectedFuel === "benzine" ? "ቤንዚን" : "ናፍጣ"} አለ`
+                : `${selectedFuel === "benzine" ? "Benzine" : "Diesel"} Available`
+              : "Nearest & Available"}
           </span>
         </div>
 
@@ -100,6 +115,11 @@ export function NearestStationSpotlight() {
         {nearest.fuels.map((fuel) => {
           const isAvail = fuel.status === "AVAILABLE";
           const isLimited = fuel.status === "LIMITED";
+          const isMatched =
+            selectedFuel &&
+            (fuel.slug === selectedFuel ||
+              fuel.nameEn.toLowerCase().includes(selectedFuel) ||
+              fuel.nameAm.includes(selectedFuel === "benzine" ? "ቤንዚን" : "ናፍጣ"));
           const statusText = isAvail
             ? (locale === "am" ? "ነዳጅ አለ" : "Available")
             : isLimited
@@ -110,6 +130,8 @@ export function NearestStationSpotlight() {
             <div
               key={fuel.fuelTypeId}
               className={`flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-2.5 transition-all ${
+                isMatched ? "ring-2 ring-brand-orange shadow-sm " : ""
+              }${
                 isAvail
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100"
                   : isLimited
