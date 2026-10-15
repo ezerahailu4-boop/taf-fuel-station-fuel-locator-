@@ -49,33 +49,18 @@ export function PageHeader({
             </Link>
           ) : (
             <div
-              className="flex shrink-0 items-center gap-2.5 rounded-2xl border p-1.5 shadow-2xs transition-all hover:scale-[1.01]"
+              className="flex shrink-0 items-center rounded-2xl border p-1 shadow-2xs transition-all hover:scale-[1.01]"
               style={{
                 background: "var(--bg)",
                 borderColor: "var(--border)",
               }}
             >
-              {/* TAF Oil Official Emblem */}
-              <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5">
+              {/* TAF Nedaj ale Official Mascot & Brand Logo */}
+              <div className="flex h-12 w-20 sm:h-13 sm:w-22 shrink-0 items-center justify-center rounded-xl bg-white px-1.5 py-1 shadow-xs ring-1 ring-black/5 transition-transform">
                 <Image
-                  src="/brand/taf-logo.webp"
-                  alt="TAF"
-                  width={34}
-                  height={34}
-                  priority
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              {/* Subtle vertical divider */}
-              <div className="h-7 w-px bg-neutral-200 dark:bg-neutral-700" />
-
-              {/* Fuel Ale (ነዳጅ አለ) Brand Mark - Prominently Sized & Crisp White Contrast */}
-              <div className="flex h-13 w-16 sm:h-14 sm:w-18 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-emerald-500/30 transition-transform">
-                <Image
-                  src="/brand/fuel-ale-logo.png"
-                  alt="ነዳጅ አለ"
-                  width={72}
+                  src="/brand/taf-nedaj-ale-logo.png"
+                  alt="TAF Nedaj ale"
+                  width={88}
                   height={56}
                   priority
                   className="h-full w-full object-contain"
