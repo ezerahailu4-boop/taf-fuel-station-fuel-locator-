@@ -129,6 +129,35 @@ describe("station management (Super Admin only)", () => {
     await assignStationAdmin(deps, superAdmin, "st-bole", { telegramUserId: "5" }, null);
     expect(activity.entries.at(-1)).toMatchObject({ action: "BRANCH_ADMIN_ASSIGNED", stationId: "st-bole" });
   });
+
+  it("assign admin by telegram username: resolves username via users repo or errors if not found", async () => {
+    const { deps, stations, activity } = setup();
+    deps.users = {
+      async findByUsername(u: string) {
+        if (u.toLowerCase() === "dawit") {
+          return { telegramUserId: BigInt(998877), firstName: "Dawit" };
+        }
+        return null;
+      },
+    };
+
+    // Unknown username throws 400
+    expect(await code(assignStationAdmin(deps, superAdmin, "st-bole", { username: "@unknown_user" }, null))).toBe(400);
+
+    // Known username succeeds
+    stations.assignResult = { userId: "u-dawit", created: false };
+    const res = await assignStationAdmin(deps, superAdmin, "st-bole", { username: "@Dawit" }, null);
+    expect(res.userId).toBe("u-dawit");
+    expect(activity.entries.at(-1)).toMatchObject({
+      action: "BRANCH_ADMIN_ASSIGNED",
+      stationId: "st-bole",
+      newValue: {
+        userId: "u-dawit",
+        telegramUserId: "998877",
+        username: "Dawit",
+      },
+    });
+  });
 });
 
 describe("fuel type management (Super Admin only)", () => {

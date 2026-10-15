@@ -71,7 +71,7 @@ export const GET = handle(async (req) => {
                 },
                 admins: {
                   select: {
-                    user: { select: { id: true, firstName: true, lastName: true, telegramUserId: true } },
+                    user: { select: { id: true, firstName: true, lastName: true, telegramUserId: true, username: true } },
                   },
                 },
               },
@@ -156,6 +156,7 @@ export const GET = handle(async (req) => {
               id: s.admins[0].user.id,
               name: `${s.admins[0].user.firstName} ${s.admins[0].user.lastName || ""}`.trim(),
               telegramUserId: s.admins[0].user.telegramUserId?.toString() ?? "",
+              username: s.admins[0].user.username ?? null,
             }
           : null,
         fuels: (s.fuelStatuses || [])

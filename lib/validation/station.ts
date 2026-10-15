@@ -99,10 +99,18 @@ export type AvailabilityUpdateInput = z.infer<typeof availabilityUpdateSchema>;
 
 export const confirmSchema = z.object({ stationId: uuid.optional() });
 
-export const assignAdminSchema = z.object({
-  telegramUserId: z.string().regex(/^\d{1,15}$/, "Telegram user ID must be numeric"),
-  firstName: z.string().trim().min(1).max(80).optional(),
-});
+export const assignAdminSchema = z
+  .object({
+    telegramUserId: z.string().trim().optional(),
+    username: z.string().trim().optional(),
+    identifier: z.string().trim().optional(),
+    firstName: z.string().trim().min(1).max(80).optional(),
+  })
+  .refine(
+    (data) => Boolean((data.identifier || data.username || data.telegramUserId)?.trim()),
+    "Telegram username or user ID is required",
+  );
+export type AssignAdminInput = z.infer<typeof assignAdminSchema>;
 
 export const activityQuerySchema = z.object({
   stationId: uuid.optional(),

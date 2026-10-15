@@ -1,3 +1,4 @@
+import { getDb } from "@/lib/db";
 import { badRequest, notFound } from "@/lib/api/errors";
 import { requireRole, type Actor } from "@/lib/auth/rbac";
 import { buildStationDTO } from "@/lib/fuel/dto";
@@ -11,6 +12,9 @@ export interface StationServiceDeps {
   fuelTypes: FuelTypeRepo;
   settings: SettingsRepo;
   activity: ActivityRepo;
+  users?: {
+    findByUsername(username: string): Promise<{ telegramUserId: bigint; firstName: string | null } | null>;
+  };
   now?: () => Date;
 }
 
@@ -145,11 +149,45 @@ export async function assignStationAdmin(
   d: StationServiceDeps,
   actor: Actor,
   stationId: string,
-  input: { telegramUserId: string; firstName?: string },
+  input: { telegramUserId?: string; username?: string; identifier?: string; firstName?: string },
   ip: string | null,
 ): Promise<{ userId: string; created: boolean }> {
   requireRole(actor, "SUPER_ADMIN");
-  const res = await d.stations.assignAdmin(stationId, BigInt(input.telegramUserId), input.firstName ?? "Branch Admin");
+
+  const raw = (input.identifier || input.username || input.telegramUserId || "").trim();
+  if (!raw) {
+    throw badRequest("Telegram username or user ID is required");
+  }
+
+  const clean = raw.replace(/^@+/, "").trim();
+  const isNumericId = /^\d{1,15}$/.test(clean) && !raw.startsWith("@") && !input.username;
+
+  let targetTgId: bigint;
+  let targetFirstName = input.firstName;
+
+  if (isNumericId) {
+    targetTgId = BigInt(clean);
+  } else {
+    let userLookup = d.users ? await d.users.findByUsername(clean) : null;
+    if (!userLookup && !d.users) {
+      const db = getDb();
+      userLookup = await db.user.findFirst({
+        where: { username: { equals: clean, mode: "insensitive" } },
+        select: { telegramUserId: true, firstName: true },
+      });
+    }
+
+    if (!userLookup) {
+      throw badRequest(`User @${clean} was not found. Please ask them to open the Telegram bot and click Start first, or provide their numeric Telegram ID.`);
+    }
+
+    targetTgId = userLookup.telegramUserId;
+    if (!targetFirstName && userLookup.firstName) {
+      targetFirstName = userLookup.firstName;
+    }
+  }
+
+  const res = await d.stations.assignAdmin(stationId, targetTgId, targetFirstName ?? "Branch Admin");
   if (res === "station_not_found") throw notFound("Station not found");
   if (res === "is_super_admin") throw badRequest("That account is a Super Admin and cannot be made a branch admin");
 
@@ -158,8 +196,14 @@ export async function assignStationAdmin(
     stationId,
     action: "BRANCH_ADMIN_ASSIGNED",
     entity: "station_admin",
-    newValue: { userId: res.userId, telegramUserId: input.telegramUserId, createdPlaceholderUser: res.created },
+    newValue: {
+      userId: res.userId,
+      telegramUserId: targetTgId.toString(),
+      username: isNumericId ? undefined : clean,
+      createdPlaceholderUser: res.created,
+    },
     ip,
   });
   return res;
 }
+

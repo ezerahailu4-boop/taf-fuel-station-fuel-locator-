@@ -1,3 +1,4 @@
+import { getDb } from "@/lib/db";
 import { activityReadRepository } from "@/repositories/activityReadRepository";
 import { activityRepository } from "@/repositories/activityRepository";
 import { fuelStatusRepository } from "@/repositories/fuelStatusRepository";
@@ -47,6 +48,14 @@ export const stationDeps = (): StationServiceDeps => ({
   fuelTypes: fuelTypeRepository,
   settings: settingsRepository,
   activity: activityRepository,
+  users: {
+    async findByUsername(username: string) {
+      return getDb().user.findFirst({
+        where: { username: { equals: username, mode: "insensitive" } },
+        select: { telegramUserId: true, firstName: true },
+      });
+    },
+  },
 });
 
 export const fuelStatusDeps = (): FuelStatusServiceDeps => ({

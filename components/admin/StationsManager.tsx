@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { apiFetch } from "@/lib/client/api";
 import { StationStatusBadge } from "@/components/ui/StatusBadge";
 import type { StationStatus } from "@/lib/fuel/enums";
@@ -29,7 +29,7 @@ export interface StationItem {
   longitude: number;
   status: StationStatus;
   isActive: boolean;
-  admin: { id: string; name: string; telegramUserId: string } | null;
+  admin: { id: string; name: string; telegramUserId: string; username?: string | null } | null;
   fuels?: Array<{ slug: string; nameEn: string; icon: string; status: string }>;
 }
 
@@ -47,8 +47,46 @@ export function StationsManager({
   const [isCreating, setIsCreating] = useState(false);
   const [assigningStation, setAssigningStation] = useState<StationItem | null>(null);
   const [adminTgId, setAdminTgId] = useState("");
+  const [userSuggestions, setUserSuggestions] = useState<
+    Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null }>
+  >([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  function handleTgIdChange(val: string) {
+    setAdminTgId(val);
+    const query = val.trim().replace(/^@+/, "");
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (!query) {
+      setUserSuggestions([]);
+      setSearchingUsers(false);
+      return;
+    }
+    setSearchingUsers(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await apiFetch<{
+          users: Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null }>;
+        }>(`/api/admin/users?limit=5&search=${encodeURIComponent(query)}`);
+        setUserSuggestions(res.users || []);
+      } catch {
+        setUserSuggestions([]);
+      } finally {
+        setSearchingUsers(false);
+      }
+    }, 250);
+  }
+
+  function selectSuggestedUser(user: { telegramUserId: string; username: string | null; firstName: string; lastName: string | null }) {
+    if (user.username) {
+      setAdminTgId(`@${user.username}`);
+    } else {
+      setAdminTgId(user.telegramUserId);
+    }
+    setUserSuggestions([]);
+  }
 
   // Form states
   const [formData, setFormData] = useState({
@@ -188,17 +226,25 @@ export function StationsManager({
 
   async function handleAssignAdmin(e: React.FormEvent) {
     e.preventDefault();
-    if (!assigningStation) return;
+    if (!assigningStation || !adminTgId.trim()) return;
     setBusy(true);
     setMessage(null);
     try {
+      const rawInput = adminTgId.trim();
+      const isPureDigits = /^\d{1,15}$/.test(rawInput) && !rawInput.startsWith("@");
+      const cleanUser = rawInput.replace(/^@+/, "");
+      const payload = isPureDigits
+        ? { telegramUserId: rawInput }
+        : { username: cleanUser, identifier: rawInput };
+
       await apiFetch(`/api/admin/stations/${assigningStation.id}/admin`, {
         method: "PUT",
-        body: { telegramUserId: adminTgId.trim() },
+        body: payload,
       });
       setMessage({ type: "success", text: `Branch Manager assigned to TAF ${assigningStation.branchName}!` });
       setAssigningStation(null);
       setAdminTgId("");
+      setUserSuggestions([]);
       onRefresh();
     } catch (err: unknown) {
       setMessage({ type: "error", text: err instanceof Error ? err.message : "Failed to assign admin" });
@@ -349,7 +395,12 @@ export function StationsManager({
                             <UsersIcon className="w-3 h-3 text-neutral-400" />
                             <span>{s.admin.name}</span>
                           </div>
-                          <div className="font-mono text-[11px] text-neutral-500">ID: {s.admin.telegramUserId}</div>
+                          {s.admin.username && (
+                            <div className="font-semibold text-amber-600 dark:text-amber-400 text-[11px] flex items-center gap-1">
+                              <span>@{s.admin.username}</span>
+                            </div>
+                          )}
+                          <div className="font-mono text-[10px] text-neutral-400">ID: {s.admin.telegramUserId}</div>
                         </div>
                       ) : (
                         <span className="text-neutral-400 italic text-[11px]">No staff assigned</span>
@@ -358,7 +409,8 @@ export function StationsManager({
                         type="button"
                         onClick={() => {
                           setAssigningStation(s);
-                          setAdminTgId(s.admin?.telegramUserId || "");
+                          setAdminTgId(s.admin?.username ? `@${s.admin.username}` : (s.admin?.telegramUserId || ""));
+                          setUserSuggestions([]);
                         }}
                         className="mt-1 block text-[11px] font-bold text-amber-600 hover:text-amber-500 transition-colors"
                       >
@@ -573,7 +625,10 @@ export function StationsManager({
               </div>
               <button
                 type="button"
-                onClick={() => setAssigningStation(null)}
+                onClick={() => {
+                  setAssigningStation(null);
+                  setUserSuggestions([]);
+                }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               >
                 ✕
@@ -582,33 +637,82 @@ export function StationsManager({
             <CardContent className="pt-2">
               <form onSubmit={handleAssignAdmin} className="space-y-4">
                 <p className="text-xs text-neutral-500 leading-relaxed">
-                  Enter the numeric Telegram user ID of the branch manager (obtained via @userinfobot). They can instantly manage fuel queues and inventory at <code className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[11px]">/branch</code>.
+                  Enter the Telegram <strong className="text-neutral-800 dark:text-neutral-200">@username</strong> (e.g. <span className="font-mono text-amber-600">@dawit</span>) or numeric Telegram ID of the branch manager. They can immediately manage fuel queues and inventory at <code className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[11px]">/branch</code>.
                 </p>
-                <label className="block space-y-1">
-                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Telegram Numeric User ID *</span>
-                  <input
-                    type="text"
-                    required
-                    pattern="\d{1,15}"
-                    placeholder="e.g. 2074368152"
-                    value={adminTgId}
-                    onChange={(e) => setAdminTgId(e.target.value.replace(/\D/g, ""))}
-                    className={inputClass}
-                    style={{ background: "var(--bg)", borderColor: "var(--border)" }}
-                  />
-                </label>
+                <div className="block space-y-1 relative">
+                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Telegram Username or ID *</span>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. @dawit_taf or 2074368152"
+                      value={adminTgId}
+                      onChange={(e) => handleTgIdChange(e.target.value)}
+                      className={inputClass}
+                      style={{ background: "var(--bg)", borderColor: "var(--border)" }}
+                      autoFocus
+                    />
+                    {searchingUsers && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <span className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin inline-block" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Autocomplete Suggestions */}
+                  {userSuggestions.length > 0 && (
+                    <div className="absolute z-20 left-0 right-0 mt-1 rounded-xl border shadow-xl overflow-hidden bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800">
+                      <div className="px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/60 border-b border-neutral-100 dark:border-neutral-800 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
+                        Registered Bot Users
+                      </div>
+                      <div className="max-h-48 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
+                        {userSuggestions.map((u) => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => selectSuggestedUser(u)}
+                            className="w-full text-left px-3 py-2 hover:bg-amber-50/60 dark:hover:bg-neutral-800 transition-colors flex items-center justify-between gap-2"
+                          >
+                            <div>
+                              <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                                {u.firstName} {u.lastName || ""}
+                              </div>
+                              <div className="text-[11px] text-neutral-400 font-mono">
+                                ID: {u.telegramUserId}
+                              </div>
+                            </div>
+                            {u.username ? (
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                @{u.username}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-neutral-400 italic">no username</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-neutral-400 pt-1">
+                    💡 Users who opened the Telegram bot (<span className="text-neutral-600 dark:text-neutral-300 font-mono">@taf_fuel_bot</span>) will be suggested automatically.
+                  </p>
+                </div>
                 <div className="flex justify-end gap-3 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setAssigningStation(null)}
+                    onClick={() => {
+                      setAssigningStation(null);
+                      setUserSuggestions([]);
+                    }}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     variant="brand"
-                    disabled={busy || adminTgId.length === 0}
+                    disabled={busy || adminTgId.trim().length === 0}
                   >
                     {busy ? "Saving…" : "Assign Manager"}
                   </Button>
