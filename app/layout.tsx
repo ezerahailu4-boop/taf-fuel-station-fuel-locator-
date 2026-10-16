@@ -8,7 +8,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "TAF Nedaj ale",
   description: "Find fuel availability near you.",
-  icons: { icon: "/brand/taf-logo.webp" },
+  icons: { icon: "/brand/taf-nedaj-ale-logo.png" },
 };
 
 export const viewport: Viewport = {

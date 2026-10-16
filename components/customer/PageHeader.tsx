@@ -56,12 +56,12 @@ export function PageHeader({
               }}
             >
               {/* TAF Nedaj ale Official Mascot & Brand Logo */}
-              <div className="flex h-12 w-20 sm:h-13 sm:w-22 shrink-0 items-center justify-center rounded-xl bg-white px-1.5 py-1 shadow-xs ring-1 ring-black/5 transition-transform">
+              <div className="flex h-13 w-13 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5 transition-transform">
                 <Image
                   src="/brand/taf-nedaj-ale-logo.png"
                   alt="TAF Nedaj ale"
-                  width={88}
-                  height={56}
+                  width={64}
+                  height={64}
                   priority
                   className="h-full w-full object-contain"
                 />
