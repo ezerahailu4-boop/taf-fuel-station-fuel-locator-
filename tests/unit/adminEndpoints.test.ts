@@ -130,6 +130,9 @@ vi.mock("@/lib/db", () => {
         { event: "nearby_search", _count: { event: 200 } },
       ]),
     },
+    stationFuelStatusHistory: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     $transaction: vi.fn().mockImplementation((ops) => Promise.all(ops)),
   };
   return { getDb: () => db };

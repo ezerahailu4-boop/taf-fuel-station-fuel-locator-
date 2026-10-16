@@ -91,7 +91,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   const isOperationsAdmin = user.role === "OPERATIONS_ADMIN";
 
   useEffect(() => {
-    if (isOperationsAdmin && ["users", "settings", "analytics", "ops-admins"].includes(tab)) {
+    if (isOperationsAdmin && ["users", "settings", "ops-admins"].includes(tab)) {
       setTab("overview");
     }
   }, [isOperationsAdmin, tab]);
@@ -187,7 +187,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
 
   const navItems = allNavItems.filter((item) => {
     if (isOperationsAdmin) {
-      return ["overview", "feedback", "broadcast", "stations", "fuels", "audit"].includes(item.id);
+      return ["overview", "analytics", "feedback", "broadcast", "stations", "fuels", "audit"].includes(item.id);
     }
     return true;
   });
