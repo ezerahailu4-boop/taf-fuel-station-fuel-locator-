@@ -142,6 +142,7 @@ model StationFuelStatus {
   stationId       String     @map("station_id") @db.Uuid
   fuelTypeId      String     @map("fuel_type_id") @db.Uuid
   status          FuelStatus @default(UNKNOWN)
+  liters          Float?     @map("liters")
   note            String?
   lastUpdated     DateTime   @default(now()) @map("last_updated")
   lastConfirmedAt DateTime   @default(now()) @map("last_confirmed_at")
@@ -162,6 +163,8 @@ model StationFuelStatusHistory {
   fuelTypeId  String     @map("fuel_type_id") @db.Uuid
   oldStatus   FuelStatus @map("old_status")
   newStatus   FuelStatus @map("new_status")
+  oldLiters   Float?     @map("old_liters")
+  newLiters   Float?     @map("new_liters")
   changedById String?    @map("changed_by") @db.Uuid
   changedAt   DateTime   @default(now()) @map("changed_at")
 

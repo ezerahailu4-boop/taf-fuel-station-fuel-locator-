@@ -88,6 +88,7 @@ export const availabilityUpdateSchema = z
         z.object({
           fuelTypeId: uuid,
           status: z.enum(SETTABLE_FUEL_STATUSES),
+          liters: z.coerce.number().min(0).max(100000000).nullish(),
           note: z.string().trim().max(200).nullish(),
         }),
       )

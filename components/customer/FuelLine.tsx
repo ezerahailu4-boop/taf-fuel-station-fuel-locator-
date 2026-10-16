@@ -36,7 +36,14 @@ export function FuelLine({
         )}
       </span>
       <span className="flex flex-col items-end gap-0.5">
-        <FuelStatusBadge status={fuel.status} />
+        <div className="flex items-center gap-1.5">
+          {typeof fuel.liters === "number" && fuel.status !== "OUT_OF_STOCK" && (
+            <span className="text-[11px] font-bold text-neutral-500">
+              ~{fuel.liters.toLocaleString()} L
+            </span>
+          )}
+          <FuelStatusBadge status={fuel.status} />
+        </div>
         {(showTime || fuel.isStale) && (
           <span className={`text-xs ${fuel.isStale ? "font-semibold text-amber-800 dark:text-amber-300" : ""}`} style={fuel.isStale ? undefined : { color: "var(--muted)" }}>
             {fuel.isStale && <span aria-hidden>⚠️ </span>}

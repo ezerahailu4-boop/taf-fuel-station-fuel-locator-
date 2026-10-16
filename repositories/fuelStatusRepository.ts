@@ -27,7 +27,7 @@ export const fuelStatusRepository: FuelStatusRepo = {
       const plan = planUpdate({
         station,
         fuelTypes: new Map(fuelTypes.map((f) => [f.id, { slug: f.slug, isActive: f.isActive }])),
-        current: new Map(currentRows.map((r) => [r.fuelTypeId, { status: r.status, note: r.note }])),
+        current: new Map(currentRows.map((r) => [r.fuelTypeId, { status: r.status, note: r.note, liters: r.liters }])),
         desired: { stationStatus: input.stationStatus, fuels: input.fuels },
       });
 
@@ -38,6 +38,7 @@ export const fuelStatusRepository: FuelStatusRepo = {
             stationId: input.stationId,
             fuelTypeId: c.fuelTypeId,
             status: c.newStatus,
+            liters: c.newLiters,
             note: c.newNote,
             lastUpdated: input.at,
             lastConfirmedAt: input.at,
@@ -45,6 +46,7 @@ export const fuelStatusRepository: FuelStatusRepo = {
           },
           update: {
             status: c.newStatus,
+            liters: c.newLiters,
             note: c.newNote,
             lastUpdated: input.at,
             lastConfirmedAt: input.at,
@@ -52,13 +54,15 @@ export const fuelStatusRepository: FuelStatusRepo = {
           },
         });
 
-        if (c.statusChanged) {
+        if (c.statusChanged || c.litersChanged) {
           await tx.stationFuelStatusHistory.create({
             data: {
               stationId: input.stationId,
               fuelTypeId: c.fuelTypeId,
               oldStatus: c.oldStatus,
               newStatus: c.newStatus,
+              oldLiters: c.oldLiters,
+              newLiters: c.newLiters,
               changedById: input.actorId,
               changedAt: input.at,
             },
@@ -69,10 +73,10 @@ export const fuelStatusRepository: FuelStatusRepo = {
           data: {
             actorUserId: input.actorId,
             stationId: input.stationId,
-            action: c.statusChanged ? "FUEL_STATUS_CHANGED" : "FUEL_NOTE_CHANGED",
+            action: c.statusChanged ? "FUEL_STATUS_CHANGED" : c.litersChanged ? "FUEL_LITERS_CHANGED" : "FUEL_NOTE_CHANGED",
             entity: "station_fuel_status",
-            oldValue: json({ fuel: c.slug, fuelTypeId: c.fuelTypeId, status: c.oldStatus, note: c.oldNote }),
-            newValue: json({ fuel: c.slug, fuelTypeId: c.fuelTypeId, status: c.newStatus, note: c.newNote }),
+            oldValue: json({ fuel: c.slug, fuelTypeId: c.fuelTypeId, status: c.oldStatus, liters: c.oldLiters, note: c.oldNote }),
+            newValue: json({ fuel: c.slug, fuelTypeId: c.fuelTypeId, status: c.newStatus, liters: c.newLiters, note: c.newNote }),
             ip: input.ip,
             createdAt: input.at,
           },

@@ -157,17 +157,24 @@ export function NearestStationSpotlight() {
                   {locale === "am" ? fuel.nameAm : fuel.nameEn}
                 </span>
               </div>
-              <span
-                className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide uppercase shadow-xs whitespace-nowrap ${
-                  isAvail
-                    ? "bg-emerald-600 text-white"
-                    : isLimited
-                      ? "bg-amber-500 text-neutral-950"
-                      : "bg-red-600 text-white"
-                }`}
-              >
-                {statusText}
-              </span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {typeof fuel.liters === "number" && (isAvail || isLimited) && (
+                  <span className="text-[11px] font-bold opacity-80">
+                    ~{fuel.liters.toLocaleString()} L
+                  </span>
+                )}
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide uppercase shadow-xs whitespace-nowrap ${
+                    isAvail
+                      ? "bg-emerald-600 text-white"
+                      : isLimited
+                        ? "bg-amber-500 text-neutral-950"
+                        : "bg-red-600 text-white"
+                  }`}
+                >
+                  {statusText}
+                </span>
+              </div>
             </div>
           );
         })}

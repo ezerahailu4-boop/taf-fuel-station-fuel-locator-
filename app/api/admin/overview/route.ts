@@ -66,6 +66,7 @@ export const GET = handle(async (req) => {
                 fuelStatuses: {
                   select: {
                     status: true,
+                    liters: true,
                     fuelType: { select: { slug: true, nameEn: true, icon: true } },
                   },
                 },
@@ -166,6 +167,7 @@ export const GET = handle(async (req) => {
             nameEn: f.fuelType.nameEn,
             icon: f.fuelType.icon,
             status: f.status,
+            liters: typeof f.liters === "number" ? f.liters : null,
           })),
       })),
     });

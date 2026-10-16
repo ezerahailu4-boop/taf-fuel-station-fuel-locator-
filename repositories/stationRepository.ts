@@ -5,7 +5,7 @@ import type { StationCreateInput, StationUpdateInput } from "@/lib/validation/st
 
 const include = {
   fuelStatuses: {
-    select: { fuelTypeId: true, status: true, note: true, lastUpdated: true, lastConfirmedAt: true },
+    select: { fuelTypeId: true, status: true, liters: true, note: true, lastUpdated: true, lastConfirmedAt: true },
   },
 } as const;
 

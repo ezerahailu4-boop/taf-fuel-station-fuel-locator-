@@ -30,7 +30,7 @@ export interface StationItem {
   status: StationStatus;
   isActive: boolean;
   admin: { id: string; name: string; telegramUserId: string; username?: string | null } | null;
-  fuels?: Array<{ slug: string; nameEn: string; icon: string; status: string }>;
+  fuels?: Array<{ slug: string; nameEn: string; icon: string; status: string; liters?: number | null }>;
 }
 
 export function StationsManager({

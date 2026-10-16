@@ -16,6 +16,7 @@ export interface FuelTypeRow {
 export interface FuelStatusRow {
   fuelTypeId: string;
   status: FuelStatus;
+  liters?: number | null;
   note: string | null;
   lastUpdated: Date;
   lastConfirmedAt: Date;
@@ -46,6 +47,7 @@ export interface StationFuelDTO {
   nameAm: string;
   icon: string;
   status: FuelStatus;
+  liters?: number | null;
   note: string | null;
   lastUpdated: string | null;
   lastConfirmedAt: string | null;

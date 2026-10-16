@@ -34,7 +34,14 @@ describe("planUpdate", () => {
   it("records old → new for a real transition", () => {
     const plan = planUpdate(base({ desired: { fuels: [{ fuelTypeId: "d", status: "AVAILABLE" }] } }));
     expect(plan.fuelChanges).toEqual([
-      { fuelTypeId: "d", slug: "diesel", oldStatus: "OUT_OF_STOCK", newStatus: "AVAILABLE", oldNote: null, newNote: null, statusChanged: true },
+      { fuelTypeId: "d", slug: "diesel", oldStatus: "OUT_OF_STOCK", newStatus: "AVAILABLE", oldLiters: null, newLiters: null, oldNote: null, newNote: null, statusChanged: true, litersChanged: false },
+    ]);
+  });
+
+  it("records liters update correctly", () => {
+    const plan = planUpdate(base({ desired: { fuels: [{ fuelTypeId: "d", status: "OUT_OF_STOCK", liters: 15000 }] } }));
+    expect(plan.fuelChanges).toEqual([
+      { fuelTypeId: "d", slug: "diesel", oldStatus: "OUT_OF_STOCK", newStatus: "OUT_OF_STOCK", oldLiters: null, newLiters: 15000, oldNote: null, newNote: null, statusChanged: false, litersChanged: true },
     ]);
   });
 

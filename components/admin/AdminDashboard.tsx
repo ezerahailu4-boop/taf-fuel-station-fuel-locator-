@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { apiFetch } from "@/lib/client/api";
@@ -135,6 +135,22 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
   useEffect(() => {
     fetchOverview();
   }, [fetchOverview]);
+
+  const totalBenzineLiters = useMemo(() => {
+    if (!data?.stations) return 0;
+    return data.stations.reduce((acc, s) => {
+      const b = s.fuels?.find((f) => f.slug === "benzine");
+      return acc + (typeof b?.liters === "number" ? b.liters : 0);
+    }, 0);
+  }, [data?.stations]);
+
+  const totalDieselLiters = useMemo(() => {
+    if (!data?.stations) return 0;
+    return data.stations.reduce((acc, s) => {
+      const d = s.fuels?.find((f) => f.slug === "diesel");
+      return acc + (typeof d?.liters === "number" ? d.liters : 0);
+    }, 0);
+  }, [data?.stations]);
 
   interface NavItem {
     id: TabId;
@@ -540,6 +556,51 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                   </Card>
                 </div>
 
+                {/* Network Fuel Inventory Overview (Operations Admin & Super Admin) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div
+                    className="rounded-2xl border p-4.5 bg-gradient-to-r from-amber-500/15 via-brand-orange/10 to-transparent flex items-center justify-between shadow-2xs"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <div>
+                      <span className="text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-brand-orange animate-pulse" />
+                        <span>Total Benzine Remaining</span>
+                      </span>
+                      <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white mt-1 tracking-tight">
+                        ⛽ {totalBenzineLiters.toLocaleString()} <span className="text-sm font-bold text-neutral-500">Liters</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                        Aggregate network inventory reported by branches
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 rounded-2xl bg-brand-orange/20 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                      🛢️
+                    </div>
+                  </div>
+
+                  <div
+                    className="rounded-2xl border p-4.5 bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-transparent flex items-center justify-between shadow-2xs"
+                    style={{ borderColor: "var(--border)" }}
+                  >
+                    <div>
+                      <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Total Diesel Remaining</span>
+                      </span>
+                      <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white mt-1 tracking-tight">
+                        ⛽ {totalDieselLiters.toLocaleString()} <span className="text-sm font-bold text-neutral-500">Liters</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                        Aggregate network inventory reported by branches
+                      </p>
+                    </div>
+                    <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                      🚚
+                    </div>
+                  </div>
+                </div>
+
                 {/* Live Stations Snapshot */}
                 <Card>
                   <CardHeader className="p-5 pb-3">
@@ -550,7 +611,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                           <span>Active Station Network</span>
                         </CardTitle>
                         <CardDescription>
-                          Real-time fuel availability and branch staff assignments
+                          Real-time fuel availability, remaining liters, and branch staff
                         </CardDescription>
                       </div>
                       <Button
@@ -586,7 +647,7 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                             <StationStatusBadge status={s.status} />
                           </div>
 
-                          {/* Fuels chips */}
+                          {/* Fuels chips with Liters */}
                           {s.fuels && s.fuels.length > 0 && (
                             <div className="flex flex-wrap gap-2 pt-1">
                               {s.fuels.map((f) => (
@@ -611,6 +672,11 @@ export function AdminDashboard({ user }: { user: PublicUser }) {
                                   />
                                   <span>
                                     {f.icon} {f.nameEn}: {f.status}
+                                    {typeof f.liters === "number" && (
+                                      <span className="ml-1 text-[11px] font-black text-brand-orange">
+                                        · {f.liters.toLocaleString()} L
+                                      </span>
+                                    )}
                                   </span>
                                 </span>
                               ))}

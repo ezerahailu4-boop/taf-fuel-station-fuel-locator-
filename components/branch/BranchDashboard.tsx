@@ -47,6 +47,7 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [draft, setDraft] = useState<Draft>({});
+  const [draftLiters, setDraftLiters] = useState<Record<string, string>>({});
   const [draftStatus, setDraftStatus] = useState<StationStatus>("OPEN");
   const [reviewOpen, setReviewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -84,6 +85,7 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
       setStation(s.station);
       setActivity(a.items);
       setDraft(Object.fromEntries(s.station.fuels.map((f) => [f.fuelTypeId, originalOf(f)])));
+      setDraftLiters(Object.fromEntries(s.station.fuels.map((f) => [f.fuelTypeId, typeof f.liters === "number" ? String(f.liters) : ""])));
       setDraftStatus(s.station.status);
     } catch (e) {
       setLoadError(errorText(e));
@@ -99,14 +101,30 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
   const fuelName = (f: { nameEn: string; nameAm: string }) => (locale === "am" ? f.nameAm : f.nameEn);
 
   const changes = useMemo(() => {
-    if (!station) return { fuels: [] as Array<{ fuel: StationFuelDTO; to: SettableFuelStatus }>, status: null as null | { from: StationStatus; to: StationStatus } };
+    if (!station) return { fuels: [] as Array<{ fuel: StationFuelDTO; to: SettableFuelStatus; liters: number | null; statusChanged: boolean; litersChanged: boolean }>, status: null as null | { from: StationStatus; to: StationStatus } };
     const fuels = station.fuels.flatMap((f) => {
-      const to = draft[f.fuelTypeId];
-      return to && to !== originalOf(f) ? [{ fuel: f, to }] : [];
+      const to = draft[f.fuelTypeId] ?? originalOf(f);
+      const currentLiters = typeof f.liters === "number" ? f.liters : null;
+      const rawDraft = draftLiters[f.fuelTypeId]?.trim();
+      const nextLiters = rawDraft !== undefined && rawDraft !== "" ? Number(rawDraft) : null;
+
+      const statusChanged = to !== null && to !== originalOf(f);
+      const litersChanged = nextLiters !== currentLiters && (nextLiters === null || !isNaN(nextLiters));
+
+      if (statusChanged || litersChanged) {
+        return [{
+          fuel: f,
+          to: to ?? (nextLiters && nextLiters > 0 ? "AVAILABLE" : "OUT_OF_STOCK"),
+          liters: nextLiters,
+          statusChanged,
+          litersChanged,
+        }];
+      }
+      return [];
     });
     const status = draftStatus !== station.status ? { from: station.status, to: draftStatus } : null;
     return { fuels, status };
-  }, [station, draft, draftStatus]);
+  }, [station, draft, draftLiters, draftStatus]);
 
   const dirty = changes.fuels.length > 0 || changes.status !== null;
 
@@ -119,7 +137,11 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
         body: {
           ...(isBranchAdmin ? {} : { stationId: station.id }),
           ...(changes.status ? { stationStatus: changes.status.to } : {}),
-          fuels: changes.fuels.map((x) => ({ fuelTypeId: x.fuel.fuelTypeId, status: x.to })),
+          fuels: changes.fuels.map((x) => ({
+            fuelTypeId: x.fuel.fuelTypeId,
+            status: x.to,
+            liters: x.liters,
+          })),
         },
       });
       setReviewOpen(false);
@@ -246,7 +268,14 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
                   <span aria-hidden>{f.icon} </span>
                   {fuelName(f)}
                 </h2>
-                <FuelStatusBadge status={f.status} />
+                <div className="flex items-center gap-2">
+                  {typeof f.liters === "number" && (
+                    <span className="rounded-lg bg-brand-orange/10 px-2.5 py-1 text-xs font-black text-brand-orange">
+                      ⛽ {f.liters.toLocaleString()} L
+                    </span>
+                  )}
+                  <FuelStatusBadge status={f.status} />
+                </div>
               </div>
               <p className="mb-3 text-sm" style={{ color: "var(--muted)" }}>
                 {f.lastUpdated ? `${c("lastUpdated")}: ` : c("notReported")}
@@ -254,6 +283,36 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
               </p>
               {f.isStale && <p className="mb-3 rounded-xl bg-amber-100 px-3 py-2 text-sm font-medium text-amber-900">⚠️ {tFuel("stale")}</p>}
               <SegmentedControl label={fuelName(f)} options={fuelOptions} value={draft[f.fuelTypeId] ?? null} onChange={(v) => setDraft((d) => ({ ...d, [f.fuelTypeId]: v }))} disabled={!canWrite || busy} />
+
+              {/* Liters Entry for Branch Admin */}
+              <div className="mt-4 pt-3.5 border-t space-y-1.5" style={{ borderColor: "var(--border)" }}>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-neutral-700 dark:text-neutral-200">
+                    {locale === "am" ? "የቀረ የነዳጅ መጠን (በሊትር / Liters)" : "Remaining Fuel Volume (Liters)"}
+                  </label>
+                  {typeof f.liters === "number" && (
+                    <span className="text-[11px] font-medium text-neutral-500">
+                      {locale === "am" ? `የአሁኑ፦ ${f.liters.toLocaleString()} ሊትር` : `Current: ${f.liters.toLocaleString()} L`}
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    step="50"
+                    value={draftLiters[f.fuelTypeId] ?? ""}
+                    onChange={(e) => setDraftLiters((d) => ({ ...d, [f.fuelTypeId]: e.target.value }))}
+                    disabled={!canWrite || busy}
+                    placeholder={locale === "am" ? "የሊትር መጠን ያስገቡ (ለምሳሌ 20000)" : "Enter remaining liters (e.g. 20000)"}
+                    className="min-h-12 w-full rounded-xl border px-3 pr-14 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+                    style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-extrabold text-neutral-400 pointer-events-none">
+                    Liters
+                  </span>
+                </div>
+              </div>
             </section>
           ))}
 
@@ -310,7 +369,15 @@ export function BranchDashboard({ user }: { user: PublicUser }) {
           )}
           {changes.fuels.map((x) => (
             <li key={x.fuel.fuelTypeId} className="rounded-xl px-3 py-2 ring-1 ring-black/10">
-              {fuelName(x.fuel)}: <b>{x.fuel.neverReported ? c("notReported") : tFuel(`status.${x.fuel.status}`)}</b> → <b>{tFuel(`status.${x.to}`)}</b>
+              <div className="font-bold">{fuelName(x.fuel)}</div>
+              <div className="text-xs text-neutral-600 dark:text-neutral-300">
+                {t("fuelStatus") || "Status"}: <b>{x.fuel.neverReported ? c("notReported") : tFuel(`status.${x.fuel.status}`)}</b> → <b>{tFuel(`status.${x.to}`)}</b>
+              </div>
+              {x.litersChanged && (
+                <div className="text-xs font-bold text-brand-orange mt-0.5">
+                  Volume: {typeof x.fuel.liters === "number" ? `${x.fuel.liters.toLocaleString()} L` : "Not set"} → <b>{typeof x.liters === "number" ? `${x.liters.toLocaleString()} L` : "Cleared"}</b>
+                </div>
+              )}
             </li>
           ))}
         </ul>

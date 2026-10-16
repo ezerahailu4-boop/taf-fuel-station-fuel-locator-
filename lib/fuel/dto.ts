@@ -28,6 +28,7 @@ export function buildStationDTO(
       nameAm: ft.nameAm,
       icon: ft.icon,
       status: display.status,
+      liters: s?.liters ?? null,
       note: s?.note ?? null,
       lastUpdated: s ? s.lastUpdated.toISOString() : null,
       lastConfirmedAt: s ? s.lastConfirmedAt.toISOString() : null,
