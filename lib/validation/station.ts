@@ -83,6 +83,7 @@ export const availabilityUpdateSchema = z
   .object({
     stationId: uuid.optional(),
     stationStatus: z.enum(STATION_STATUSES).optional(),
+    reporterName: z.string().trim().max(100).optional(),
     fuels: z
       .array(
         z.object({
@@ -98,7 +99,10 @@ export const availabilityUpdateSchema = z
   .refine((o) => o.fuels.length > 0 || o.stationStatus !== undefined, "Nothing to update");
 export type AvailabilityUpdateInput = z.infer<typeof availabilityUpdateSchema>;
 
-export const confirmSchema = z.object({ stationId: uuid.optional() });
+export const confirmSchema = z.object({
+  stationId: uuid.optional(),
+  reporterName: z.string().trim().max(100).optional(),
+});
 
 export const assignAdminSchema = z
   .object({

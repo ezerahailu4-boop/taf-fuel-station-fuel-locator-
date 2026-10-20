@@ -6,20 +6,21 @@ import type { PublicUser } from "@/types/auth";
 import { BranchDashboard } from "./BranchDashboard";
 
 const DEFAULT_STAFF_USER: PublicUser = {
-  id: "c0000000-0000-0000-0000-000000000001",
-  telegramUserId: "2074368152",
+  id: "c0000000-0000-0000-0000-000000000002",
+  telegramUserId: "999999000001",
   firstName: "Branch",
   lastName: "Staff",
-  username: "taf_staff",
+  username: "branch_staff",
   preferredLocale: "en",
-  role: "SUPER_ADMIN",
+  role: "OPERATIONS_ADMIN",
   stationId: "b0000000-0000-0000-0000-000000000001",
 };
 
 /**
- * Passwordless branch staff portal:
- * Anyone opening /branch can immediately view and update station fuel availability
- * without entering a password or OTP code.
+ * Branch staff portal:
+ * When accessed via Telegram (Mini App), it automatically authenticates and records updates
+ * under the person's Telegram user account.
+ * When accessed outside Telegram without sign in, it falls back to the Branch Staff guest profile.
  */
 export function BranchApp() {
   const { state } = useAuth();
@@ -33,15 +34,16 @@ export function BranchApp() {
     );
   }
 
-  // If signed in with an administrative role, use that user; otherwise use the default staff user
+  // If signed in (including via Telegram Mini App), use THAT authenticated user!
   const user: PublicUser =
-    state.status === "authenticated" &&
-    (state.user.role === "SUPER_ADMIN" ||
-      state.user.role === "OPERATIONS_ADMIN" ||
-      state.user.role === "BRANCH_ADMIN" ||
-      state.user.role === "VIEWER")
-      ? state.user
+    state.status === "authenticated"
+      ? {
+          ...state.user,
+          role: state.user.role === "CUSTOMER" ? "OPERATIONS_ADMIN" : state.user.role,
+        }
       : DEFAULT_STAFF_USER;
 
-  return <BranchDashboard user={user} />;
+  const isTelegramUser = state.status === "authenticated" && Boolean(state.user.telegramUserId);
+
+  return <BranchDashboard user={user} isTelegramUser={isTelegramUser} />;
 }

@@ -1,5 +1,5 @@
 import type { TelegramUpdate } from "@/types/notifications";
-import { answerCallbackQuery } from "../bot";
+import { answerCallbackQuery, sendTelegramMessage } from "../bot";
 import { handleStartCommand } from "./start";
 import { handleCheckCommand } from "./check";
 import { handleStationsCommand } from "./stations";
@@ -47,6 +47,29 @@ export async function dispatchTelegramUpdate(
     case "/start":
       await handleStartCommand(msg, botToken, appUrl);
       break;
+    case "/branch": {
+      const isAmharic = msg.from?.language_code?.toLowerCase().startsWith("am");
+      await sendTelegramMessage(
+        botToken,
+        msg.chat.id,
+        isAmharic
+          ? "⚡ **የማደያ ነዳጅ ሁኔታ ማዘመኛ (Branch Portal)**\n\nከዚህ በታች ያለውን ቁልፍ በመጫን በቴሌግራም መለያዎ የነዳጅ ሁኔታን በቀጥታ ያዘምኑ፦"
+          : "⚡ **TAF Branch Portal**\n\nTap the button below to update fuel availability with your Telegram account:",
+        {
+          replyMarkup: {
+            inline_keyboard: [
+              [
+                {
+                  text: isAmharic ? "⚡ የማደያ ፖርታል ክፈት" : "⚡ Open Branch Fuel Portal",
+                  web_app: { url: `${appUrl}/branch` },
+                },
+              ],
+            ],
+          },
+        }
+      );
+      break;
+    }
     case "/check":
       await handleCheckCommand(msg, botToken, appUrl);
       break;

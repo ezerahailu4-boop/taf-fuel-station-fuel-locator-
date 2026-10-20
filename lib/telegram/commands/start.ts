@@ -92,6 +92,16 @@ export async function handleStartCommand(
             ],
           ]
         : []),
+      ...(msg.text?.toLowerCase().includes("branch")
+        ? [
+            [
+              {
+                text: isAmharic ? "⚡ የማደያ ነዳጅ ሁኔታ ማዘመኛ (Branch Portal)" : "⚡ Open Branch Fuel Portal",
+                web_app: { url: `${appUrl}/branch` },
+              },
+            ],
+          ]
+        : []),
       [
         {
           text: isAmharic ? "⛽ ቤንዚን (Benzine)" : "⛽ Benzine",
