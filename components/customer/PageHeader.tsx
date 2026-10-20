@@ -25,8 +25,8 @@ export function PageHeader({
   back?: { href: string; label: string };
 }) {
   useEffect(() => {
-    if (title && typeof document !== "undefined") {
-      document.title = title;
+    if (typeof document !== "undefined") {
+      document.title = title || "ነዳጅ አለ";
     }
   }, [title]);
 
@@ -59,7 +59,7 @@ export function PageHeader({
               <div className="flex h-13 w-13 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-xs ring-1 ring-black/5 transition-transform">
                 <Image
                   src="/brand/taf-nedaj-ale-logo.png"
-                  alt="TAF Nedaj ale"
+                  alt="ነዳጅ አለ"
                   width={64}
                   height={64}
                   priority

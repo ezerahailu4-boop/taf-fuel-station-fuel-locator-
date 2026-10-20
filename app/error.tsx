@@ -25,7 +25,7 @@ export default function GlobalErrorPage({
           priority
         />
       </div>
-      <h1 className="text-xl font-black mb-2 text-amber-400">TAF Nedaj ale</h1>
+      <h1 className="text-xl font-black mb-2 text-amber-400">ነዳጅ አለ</h1>
       <p className="text-sm text-neutral-300 max-w-xs mb-6">
         Something unexpected occurred while loading the fuel station finder.
       </p>

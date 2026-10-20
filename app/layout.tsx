@@ -6,7 +6,7 @@ import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TAF Nedaj ale",
+  title: "ነዳጅ አለ",
   description: "Find fuel availability near you.",
   icons: { icon: "/brand/taf-nedaj-ale-logo.png" },
 };

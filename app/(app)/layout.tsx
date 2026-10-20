@@ -6,7 +6,7 @@ import { StationsProvider } from "@/components/customer/StationsProvider";
 import { ThemeSync } from "@/components/customer/ThemeSync";
 
 export const metadata: Metadata = {
-  title: "TAF Nedaj ale",
+  title: "ነዳጅ አለ",
 };
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
