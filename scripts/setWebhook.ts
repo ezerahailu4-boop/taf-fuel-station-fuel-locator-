@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { setTelegramWebhook, setBotCommands } from "@/lib/telegram/bot";
+import { setTelegramWebhook, setBotCommands, setBotName } from "@/lib/telegram/bot";
 
 async function main() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -28,6 +28,10 @@ async function main() {
   } else {
     console.error("❌ Failed to set webhook:", webhookResult);
   }
+
+  // Set bot display name
+  console.log("Setting bot display name to ነዳጅ አለ...");
+  await setBotName(token, "ነዳጅ አለ");
 
   // Register bot command list in Telegram menu
   console.log("Registering bot commands in English & Amharic...");

@@ -139,3 +139,22 @@ export async function setBotCommands(
   const data = await res.json().catch(() => ({ ok: false }));
   return !!data.ok;
 }
+
+export async function setBotName(
+  botToken: string,
+  name: string,
+  languageCode?: string
+): Promise<boolean> {
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/setMyName`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name,
+      language_code: languageCode,
+    }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  const data = await res.json().catch(() => ({ ok: false }));
+  return !!data.ok;
+}
+
