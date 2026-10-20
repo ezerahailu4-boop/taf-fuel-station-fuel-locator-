@@ -246,54 +246,6 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
         </div>
       </header>
 
-      {/* User Attribution Banner */}
-      {isTelegramUser ? (
-        <div className="flex items-center justify-between rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 px-4 py-2.5 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-emerald-900 dark:text-emerald-200">
-              {locale === "am" ? "በዚህ የቴሌግራም መለያ እየተዘገበ ነው፦" : "Updating as Telegram user:"}{" "}
-              <b className="underline decoration-emerald-400">
-                {user.firstName} {user.lastName || ""} {user.username ? `(@${user.username})` : ""}
-              </b>
-            </span>
-          </div>
-          <span className="rounded-md bg-emerald-200/70 dark:bg-emerald-800/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
-            Telegram
-          </span>
-        </div>
-      ) : (
-        <div className="rounded-2xl border p-3.5 space-y-2 shadow-sm" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-bold text-neutral-700 dark:text-neutral-200 flex items-center gap-1.5">
-              <span>👤</span>
-              {locale === "am" ? "የቴሌግራም ስምዎ ወይም Username (@username)" : "Your Telegram Name or Username"}
-            </span>
-            <a
-              href="https://t.me/taf_fuel_bot?start=branch"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-orange hover:underline"
-            >
-              <span>✈️ {locale === "am" ? "በቴሌግራም ክፈት" : "Open in Telegram"}</span>
-            </a>
-          </div>
-          <input
-            type="text"
-            value={reporterName}
-            onChange={(e) => handleReporterNameChange(e.target.value)}
-            placeholder={locale === "am" ? "ለምሳሌ፦ @user_name ወይም ስምዎ" : "e.g. @your_username or your name"}
-            className="min-h-10 w-full rounded-xl border px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
-            style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
-          />
-          <p className="text-[11px]" style={{ color: "var(--muted)" }}>
-            {locale === "am"
-              ? "የሚያደርጉት ለውጥ በእርስዎ የቴሌግራም ስም እንዲመዘገብ ስምዎን ያስገቡ ወይም ገጹን በቴሌግራም ይክፈቱ።"
-              : "Enter your name/@username so updates are saved under your Telegram name, or tap Open in Telegram."}
-          </p>
-        </div>
-      )}
-
       {!isBranchAdmin && options.length > 0 && (
         <label className="block space-y-1">
           <span className="text-sm font-medium">{t("pickStation")}</span>
@@ -387,6 +339,72 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
             </section>
           ))}
 
+          {/* Reporter Identification (at the bottom) */}
+          {isTelegramUser ? (
+            <section className="rounded-3xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-4 text-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-semibold text-emerald-900 dark:text-emerald-200">
+                    {locale === "am" ? "በዚህ የቴሌግራም መለያ እየተዘገበ ነው፦" : "Updating as Telegram user:"}{" "}
+                    <b className="underline decoration-emerald-400">
+                      {user.firstName} {user.lastName || ""} {user.username ? `(@${user.username})` : ""}
+                    </b>
+                  </span>
+                </div>
+                <span className="rounded-md bg-emerald-200/70 dark:bg-emerald-800/60 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-200">
+                  Telegram Verified
+                </span>
+              </div>
+            </section>
+          ) : (
+            <section className={card} style={{ background: "var(--surface)" }}>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-sm font-bold flex items-center gap-1.5">
+                  <span>👤</span>
+                  {locale === "am"
+                    ? "የእርስዎ ስም ወይም የቴሌግራም መለያ (Username)"
+                    : "Your Telegram Name or Username (or your name)"}
+                </span>
+                <a
+                  href="https://t.me/taf_fuel_bot?start=branch"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-brand-orange hover:underline bg-brand-orange/10 px-2.5 py-1 rounded-lg"
+                >
+                  <span>✈️ {locale === "am" ? "በቴሌግራም ክፈት" : "Open in Telegram"}</span>
+                </a>
+              </div>
+              <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
+                {locale === "am"
+                  ? "የሚያደርጉት ለውጥ በእርስዎ ስም እንዲመዘገብ ስምዎን ወይም @username እዚህ ያስገቡ፣ ወይም በቴሌግራም ይክፈቱ።"
+                  : "Enter your name/@username so updates are saved under your Telegram name, or tap Open in Telegram."}
+              </p>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={reporterName}
+                  onChange={(e) => handleReporterNameChange(e.target.value)}
+                  placeholder={
+                    locale === "am"
+                      ? "ስምዎን ወይም የቴሌግራም መለያዎን ያስገቡ (ለምሳሌ፦ ዳዊት ወይም @dawit)..."
+                      : "Enter your name or Telegram username (e.g. Dawit or @dawit)..."
+                  }
+                  className="min-h-12 w-full rounded-xl border px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+                  style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+                />
+                {reporterName.trim() && (
+                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                    <span>✓</span>
+                    {locale === "am"
+                      ? `ለውጦች በዚህ ስም ይመዘገባሉ፦ ${reporterName.trim()}`
+                      : `Updates will be recorded under: ${reporterName.trim()}`}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
           {canWrite && (
             <section className={card} style={{ background: "var(--surface)" }}>
               <p className="mb-3" style={{ color: "var(--muted)" }}>{t("stillAccurateHint")}</p>
@@ -422,7 +440,10 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
       {canWrite && station && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t p-4 pb-[max(1rem,env(safe-area-inset-bottom))]" style={{ background: "var(--surface)", borderColor: "var(--border)" }}>
           <div className="mx-auto flex max-w-xl items-center gap-3">
-            <p className="flex-1 text-sm" style={{ color: "var(--muted)" }}>{dirty ? t("unsaved") : t("nothingChanged")}</p>
+            <p className="flex-1 text-sm truncate" style={{ color: "var(--muted)" }}>
+              {dirty ? t("unsaved") : t("nothingChanged")}
+              {reporterName.trim() ? ` · by ${reporterName.trim()}` : isTelegramUser ? ` · by ${user.firstName}` : ""}
+            </p>
             <button onClick={() => setReviewOpen(true)} disabled={!dirty || busy} className="min-h-12 rounded-xl bg-brand-orange px-6 font-bold text-neutral-900 disabled:opacity-40">
               {c("save")}
             </button>
@@ -432,6 +453,17 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
 
       <ConfirmDialog open={reviewOpen} title={t("reviewTitle")} confirmLabel={c("confirm")} cancelLabel={c("cancel")} busy={busy} onConfirm={() => void save()} onCancel={() => setReviewOpen(false)}>
         <p className="mb-3" style={{ color: "var(--muted)" }}>{t("reviewIntro")}</p>
+        <div className="mb-3 rounded-xl px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-xs flex items-center justify-between">
+          <span className="font-semibold text-neutral-600 dark:text-neutral-300">
+            {locale === "am" ? "ለውጡን የሚያስመዘግበው፦" : "Recorded under:"}
+          </span>
+          <b className="text-brand-orange">
+            {reporterName.trim() ||
+              (isTelegramUser
+                ? `${user.firstName} ${user.lastName || ""}`.trim()
+                : "Branch Staff")}
+          </b>
+        </div>
         <ul className="space-y-2">
           {changes.status && (
             <li className="rounded-xl px-3 py-2 ring-1 ring-black/10">
