@@ -10,6 +10,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   busy,
+  confirmDisabled,
   onConfirm,
   onCancel,
 }: {
@@ -19,6 +20,7 @@ export function ConfirmDialog({
   confirmLabel: string;
   cancelLabel: string;
   busy?: boolean;
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -47,7 +49,7 @@ export function ConfirmDialog({
           <button type="button" onClick={onCancel} disabled={busy} className="min-h-12 rounded-xl border px-4 font-semibold" style={{ borderColor: "var(--border)" }}>
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={busy} className="min-h-12 rounded-xl bg-brand-orange px-4 font-semibold text-neutral-900 disabled:opacity-60">
+          <button type="button" onClick={onConfirm} disabled={busy || confirmDisabled} className="min-h-12 rounded-xl bg-brand-orange px-4 font-semibold text-neutral-900 disabled:opacity-40">
             {confirmLabel}
           </button>
         </div>

@@ -47,6 +47,7 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [reporterName, setReporterName] = useState("");
+  const [nameError, setNameError] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && !isTelegramUser) {
@@ -57,6 +58,7 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
 
   const handleReporterNameChange = (val: string) => {
     setReporterName(val);
+    if (val.trim()) setNameError(false);
     if (typeof window !== "undefined") {
       localStorage.setItem("taf_branch_reporter_name", val);
     }
@@ -144,8 +146,44 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
 
   const dirty = changes.fuels.length > 0 || changes.status !== null;
 
+  function triggerReview() {
+    if (!isTelegramUser && !reporterName.trim()) {
+      setNameError(true);
+      setToast({
+        kind: "error",
+        text:
+          locale === "am"
+            ? "እባክዎ ስምዎን ወይም የቴሌግራም መለያዎን (Username) ያስገቡ"
+            : "Please enter your name or Telegram username before saving",
+      });
+      const el = document.getElementById("reporter-name-input");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus();
+      }
+      return;
+    }
+    setReviewOpen(true);
+  }
+
   async function save() {
     if (!station || !dirty) return;
+    if (!isTelegramUser && !reporterName.trim()) {
+      setNameError(true);
+      setToast({
+        kind: "error",
+        text:
+          locale === "am"
+            ? "እባክዎ ስምዎን ወይም የቴሌግራም መለያዎን (Username) ያስገቡ"
+            : "Please enter your name or Telegram username before saving",
+      });
+      const el = document.getElementById("reporter-name-input");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus();
+      }
+      return;
+    }
     setBusy(true);
     try {
       await api("/api/branch/availability", {
@@ -174,6 +212,22 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
 
   async function confirmCurrent() {
     if (!station) return;
+    if (!isTelegramUser && !reporterName.trim()) {
+      setNameError(true);
+      setToast({
+        kind: "error",
+        text:
+          locale === "am"
+            ? "እባክዎ ስምዎን ወይም የቴሌግራም መለያዎን (Username) ያስገቡ"
+            : "Please enter your name or Telegram username before confirming",
+      });
+      const el = document.getElementById("reporter-name-input");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus();
+      }
+      return;
+    }
     setBusy(true);
     try {
       await api("/api/branch/confirm", {
@@ -358,13 +412,22 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
               </div>
             </section>
           ) : (
-            <section className={card} style={{ background: "var(--surface)" }}>
+            <section
+              id="reporter-name-section"
+              className={`${card} transition-colors ${
+                nameError && !reporterName.trim() ? "ring-2 ring-red-500 bg-red-50/20 dark:bg-red-950/20" : ""
+              }`}
+              style={{ background: "var(--surface)" }}
+            >
               <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="text-sm font-bold flex items-center gap-1.5">
                   <span>👤</span>
                   {locale === "am"
                     ? "የእርስዎ ስም ወይም የቴሌግራም መለያ (Username)"
-                    : "Your Telegram Name or Username (or your name)"}
+                    : "Your Telegram Name or Username"}
+                  <span className="text-red-500 font-bold text-xs">
+                    * {locale === "am" ? "(ግዴታ)" : "(Required)"}
+                  </span>
                 </span>
                 <a
                   href="https://t.me/taf_fuel_bot?start=branch"
@@ -382,6 +445,7 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
               </p>
               <div className="space-y-2">
                 <input
+                  id="reporter-name-input"
                   type="text"
                   value={reporterName}
                   onChange={(e) => handleReporterNameChange(e.target.value)}
@@ -390,9 +454,25 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
                       ? "ስምዎን ወይም የቴሌግራም መለያዎን ያስገቡ (ለምሳሌ፦ ዳዊት ወይም @dawit)..."
                       : "Enter your name or Telegram username (e.g. Dawit or @dawit)..."
                   }
-                  className="min-h-12 w-full rounded-xl border px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
-                  style={{ background: "var(--bg)", borderColor: "var(--border)", color: "var(--text)" }}
+                  className={`min-h-12 w-full rounded-xl border px-3 text-sm font-semibold focus:outline-none focus:ring-2 ${
+                    nameError && !reporterName.trim()
+                      ? "border-red-500 ring-2 ring-red-500/40"
+                      : "focus:ring-brand-orange/40"
+                  }`}
+                  style={{
+                    background: "var(--bg)",
+                    borderColor: nameError && !reporterName.trim() ? "#ef4444" : "var(--border)",
+                    color: "var(--text)",
+                  }}
                 />
+                {nameError && !reporterName.trim() && (
+                  <p className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5 animate-pulse">
+                    <span>⚠️</span>
+                    {locale === "am"
+                      ? "እባክዎ ስምዎን ወይም የቴሌግራም መለያዎን (Username) ያስገቡ — ግዴታ ነው!"
+                      : "Please enter your name or Telegram username — this is required!"}
+                  </p>
+                )}
                 {reporterName.trim() && (
                   <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                     <span>✓</span>
@@ -444,26 +524,52 @@ export function BranchDashboard({ user, isTelegramUser = false }: { user: Public
               {dirty ? t("unsaved") : t("nothingChanged")}
               {reporterName.trim() ? ` · by ${reporterName.trim()}` : isTelegramUser ? ` · by ${user.firstName}` : ""}
             </p>
-            <button onClick={() => setReviewOpen(true)} disabled={!dirty || busy} className="min-h-12 rounded-xl bg-brand-orange px-6 font-bold text-neutral-900 disabled:opacity-40">
+            <button onClick={triggerReview} disabled={!dirty || busy} className="min-h-12 rounded-xl bg-brand-orange px-6 font-bold text-neutral-900 disabled:opacity-40">
               {c("save")}
             </button>
           </div>
         </div>
       )}
 
-      <ConfirmDialog open={reviewOpen} title={t("reviewTitle")} confirmLabel={c("confirm")} cancelLabel={c("cancel")} busy={busy} onConfirm={() => void save()} onCancel={() => setReviewOpen(false)}>
+      <ConfirmDialog
+        open={reviewOpen}
+        title={t("reviewTitle")}
+        confirmLabel={c("confirm")}
+        cancelLabel={c("cancel")}
+        busy={busy}
+        confirmDisabled={!isTelegramUser && !reporterName.trim()}
+        onConfirm={() => void save()}
+        onCancel={() => setReviewOpen(false)}
+      >
         <p className="mb-3" style={{ color: "var(--muted)" }}>{t("reviewIntro")}</p>
         <div className="mb-3 rounded-xl px-3 py-2 bg-neutral-100 dark:bg-neutral-800 text-xs flex items-center justify-between">
           <span className="font-semibold text-neutral-600 dark:text-neutral-300">
             {locale === "am" ? "ለውጡን የሚያስመዘግበው፦" : "Recorded under:"}
           </span>
-          <b className="text-brand-orange">
+          <b className={!isTelegramUser && !reporterName.trim() ? "text-red-500 font-bold" : "text-brand-orange"}>
             {reporterName.trim() ||
               (isTelegramUser
                 ? `${user.firstName} ${user.lastName || ""}`.trim()
-                : "Branch Staff")}
+                : locale === "am"
+                  ? "⚠️ ስም አላስገቡም (ግዴታ ነው)"
+                  : "⚠️ Name required")}
           </b>
         </div>
+        {!isTelegramUser && !reporterName.trim() && (
+          <div className="mb-3 space-y-1">
+            <label className="text-xs font-bold text-red-500">
+              {locale === "am" ? "ስም ወይም የቴሌግራም ዩዘርኔም (ግዴታ)፦" : "Name or Telegram Username (Required):"}
+            </label>
+            <input
+              type="text"
+              value={reporterName}
+              onChange={(e) => handleReporterNameChange(e.target.value)}
+              placeholder={locale === "am" ? "ስምዎን ያስገቡ..." : "Enter your name..."}
+              className="min-h-10 w-full rounded-xl border border-red-500 px-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-orange/40"
+              style={{ background: "var(--bg)", color: "var(--text)" }}
+            />
+          </div>
+        )}
         <ul className="space-y-2">
           {changes.status && (
             <li className="rounded-xl px-3 py-2 ring-1 ring-black/10">
