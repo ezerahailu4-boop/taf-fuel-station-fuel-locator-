@@ -42,22 +42,22 @@ function mapSubscription(row: {
     createdAt: row.createdAt.toISOString(),
     station: row.station
       ? {
-          id: row.station.id,
-          name: row.station.name,
-          branchName: row.station.branchName,
-          address: row.station.address,
-          city: row.station.city,
-          area: row.station.area,
-        }
+        id: row.station.id,
+        name: row.station.name,
+        branchName: row.station.branchName,
+        address: row.station.address,
+        city: row.station.city,
+        area: row.station.area,
+      }
       : undefined,
     fuelType: row.fuelType
       ? {
-          id: row.fuelType.id,
-          slug: row.fuelType.slug,
-          nameEn: row.fuelType.nameEn,
-          nameAm: row.fuelType.nameAm,
-          icon: row.fuelType.icon,
-        }
+        id: row.fuelType.id,
+        slug: row.fuelType.slug,
+        nameEn: row.fuelType.nameEn,
+        nameAm: row.fuelType.nameAm,
+        icon: row.fuelType.icon,
+      }
       : undefined,
   };
 }

@@ -37,11 +37,7 @@ export function FuelLine({
       </span>
       <span className="flex flex-col items-end gap-0.5">
         <div className="flex items-center gap-1.5">
-          {typeof fuel.liters === "number" && fuel.status !== "OUT_OF_STOCK" && (
-            <span className="text-[11px] font-bold text-neutral-500">
-              ~{fuel.liters.toLocaleString()} L
-            </span>
-          )}
+
           <FuelStatusBadge status={fuel.status} />
         </div>
         {(showTime || fuel.isStale) && (
