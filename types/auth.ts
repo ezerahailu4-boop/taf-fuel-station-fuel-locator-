@@ -8,6 +8,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string | null;
   username: string | null;
+  phone?: string | null;
   preferredLocale: string;
   role: Role;
   isActive: boolean;
@@ -20,6 +21,7 @@ export interface PublicUser {
   firstName: string;
   lastName: string | null;
   username: string | null;
+  phone?: string | null;
   preferredLocale: string;
   role: Role;
   stationId: string | null;
@@ -32,6 +34,7 @@ export function toPublicUser(u: AuthUser): PublicUser {
     firstName: u.firstName,
     lastName: u.lastName,
     username: u.username,
+    phone: u.phone ?? null,
     preferredLocale: u.preferredLocale,
     role: u.role,
     stationId: u.stationId,
@@ -57,6 +60,7 @@ export interface UserRepo {
   upsertFromTelegram(user: TelegramUser, now: Date): Promise<AuthUser>;
   findById(id: string): Promise<AuthUser | null>;
   findByTelegramId(telegramUserId: bigint): Promise<AuthUser | null>;
+  findByPhone?(phone: string): Promise<AuthUser | null>;
   touchLogin(id: string, now: Date): Promise<void>;
   recordBotUser(input: BotUserRegistrationInput): Promise<BotUserRegistrationResult>;
   getTotalUserCount(): Promise<number>;

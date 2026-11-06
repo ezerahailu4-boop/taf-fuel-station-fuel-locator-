@@ -109,11 +109,12 @@ export const assignAdminSchema = z
     telegramUserId: z.string().trim().optional(),
     username: z.string().trim().optional(),
     identifier: z.string().trim().optional(),
+    phone: z.string().trim().optional(),
     firstName: z.string().trim().min(1).max(80).optional(),
   })
   .refine(
-    (data) => Boolean((data.identifier || data.username || data.telegramUserId)?.trim()),
-    "Telegram username or user ID is required",
+    (data) => Boolean((data.identifier || data.username || data.telegramUserId || data.phone)?.trim()),
+    "Telegram username, phone number, or user ID is required",
   );
 export type AssignAdminInput = z.infer<typeof assignAdminSchema>;
 

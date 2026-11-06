@@ -29,9 +29,22 @@ export async function handleAdminCommand(
 
   if (!isStaff) {
     const deniedText = isAmharic
-      ? "🔒 **ይህ ክፍል ለTAF ሠራተኞች እና አስተዳዳሪዎች ብቻ የተፈቀደ ነው።**\n\nእርስዎ የማደያ ኃላፊ ከሆኑ፣ እባክዎ ዋና አስተዳዳሪውን (Super Admin) ያነጋግሩ።"
-      : "🔒 **This area is restricted to TAF station staff and administrators.**\n\nIf you are a branch manager, please contact your Super Admin to be registered.";
-    await sendTelegramMessage(botToken, msg.chat.id, deniedText);
+      ? "🔒 **ይህ ክፍል ለTAF ሠራተኞች እና አስተዳዳሪዎች ብቻ የተፈቀደ ነው።**\n\nእርስዎ የማደያ ኃላፊ ከሆኑ ወይም በስልክ ቁጥርዎ ተመድበው ከሆነ፣ እባክዎ ከታች ያለውን **'📱 ስልክ ቁጥር ያጋሩ'** የሚለውን ቁልፍ በመጫን መለያዎን ያገናኙ።"
+      : "🔒 **This area is restricted to TAF station staff and administrators.**\n\nIf you were assigned by your phone number or are a branch manager, tap **'📱 Share Phone Number'** below to detect and link your account:";
+    await sendTelegramMessage(botToken, msg.chat.id, deniedText, {
+      replyMarkup: {
+        keyboard: [
+          [
+            {
+              text: isAmharic ? "📱 ስልክ ቁጥር ያጋሩ (Share Phone)" : "📱 Share Phone Number",
+              request_contact: true,
+            },
+          ],
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      },
+    });
     return;
   }
 

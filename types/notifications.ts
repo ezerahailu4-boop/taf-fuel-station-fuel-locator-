@@ -146,6 +146,14 @@ export interface TelegramLocation {
   horizontal_accuracy?: number;
 }
 
+export interface TelegramContact {
+  phone_number: string;
+  first_name: string;
+  last_name?: string;
+  user_id?: number;
+  vcard?: string;
+}
+
 export interface TelegramMessage {
   message_id: number;
   from?: TelegramUser;
@@ -153,6 +161,7 @@ export interface TelegramMessage {
   date: number;
   text?: string;
   location?: TelegramLocation;
+  contact?: TelegramContact;
 }
 
 export interface TelegramCallbackQuery {
@@ -176,9 +185,14 @@ export interface TelegramInlineKeyboardButton {
 }
 
 export interface TelegramReplyKeyboardMarkup {
-  keyboard: Array<Array<{ text: string; request_location?: boolean }>>;
+  keyboard: Array<Array<{ text: string; request_location?: boolean; request_contact?: boolean }>>;
   resize_keyboard?: boolean;
   one_time_keyboard?: boolean;
+}
+
+export interface TelegramReplyKeyboardRemove {
+  remove_keyboard: true;
+  selective?: boolean;
 }
 
 export interface TelegramInlineKeyboardMarkup {

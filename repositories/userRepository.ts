@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/db";
 import type { AuthUser, UserRepo } from "@/types/auth";
 import type { Role } from "@/lib/auth/rbac";
+import { getPhoneSearchVariants } from "@/lib/phone";
 
 const include = { stationAdmin: { select: { stationId: true } } } as const;
 
@@ -17,6 +18,7 @@ function map(u: Row): AuthUser {
     firstName: u.firstName,
     lastName: u.lastName,
     username: u.username,
+    phone: u.phone ?? null,
     preferredLocale: u.preferredLocale,
     role: u.role as Role,
     isActive: u.isActive,
@@ -58,6 +60,18 @@ export const userRepository: UserRepo = {
 
   async findByTelegramId(telegramUserId) {
     const row = await findRow({ telegramUserId });
+    return row ? map(row) : null;
+  },
+
+  async findByPhone(phone) {
+    const variants = getPhoneSearchVariants(phone);
+    const row = await getDb().user.findFirst({
+      where: {
+        isActive: true,
+        OR: variants.map((v) => ({ phone: { contains: v, mode: "insensitive" } })),
+      },
+      include,
+    });
     return row ? map(row) : null;
   },
 

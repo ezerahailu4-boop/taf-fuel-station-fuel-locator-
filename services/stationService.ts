@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/db";
 import { badRequest, notFound } from "@/lib/api/errors";
 import { requireRole, type Actor } from "@/lib/auth/rbac";
+import { isPhoneNumber, getPhoneSearchVariants, normalizePhone } from "@/lib/phone";
 import { buildStationDTO } from "@/lib/fuel/dto";
 import type { StationCreateInput, StationListQuery, StationUpdateInput } from "@/lib/validation/station";
 import type { ActivityRepo } from "@/types/auth";
@@ -149,23 +150,43 @@ export async function assignStationAdmin(
   d: StationServiceDeps,
   actor: Actor,
   stationId: string,
-  input: { telegramUserId?: string; username?: string; identifier?: string; firstName?: string },
+  input: { telegramUserId?: string; username?: string; identifier?: string; phone?: string; firstName?: string },
   ip: string | null,
 ): Promise<{ userId: string; created: boolean }> {
   requireRole(actor, "SUPER_ADMIN");
 
-  const raw = (input.identifier || input.username || input.telegramUserId || "").trim();
+  const raw = (input.phone || input.identifier || input.username || input.telegramUserId || "").trim();
   if (!raw) {
-    throw badRequest("Telegram username or user ID is required");
+    throw badRequest("Telegram username, phone number, or user ID is required");
   }
 
   const clean = raw.replace(/^@+/, "").trim();
-  const isNumericId = /^\d{1,15}$/.test(clean) && !raw.startsWith("@") && !input.username;
+  const isPhone = isPhoneNumber(clean);
+  const isNumericId = !isPhone && /^\d{1,15}$/.test(clean) && !raw.startsWith("@") && !input.username;
 
   let targetTgId: bigint;
   let targetFirstName = input.firstName;
 
-  if (isNumericId) {
+  if (isPhone) {
+    const variants = getPhoneSearchVariants(clean);
+    const db = getDb();
+    const userLookup = await db.user.findFirst({
+      where: {
+        isActive: true,
+        OR: variants.map((v) => ({ phone: { contains: v, mode: "insensitive" } })),
+      },
+      select: { telegramUserId: true, firstName: true },
+    });
+
+    if (!userLookup) {
+      throw badRequest(`No registered user found with phone number "${clean}". Please ask them to open the Telegram bot and click "Share Phone Number" or send /start first.`);
+    }
+
+    targetTgId = userLookup.telegramUserId;
+    if (!targetFirstName && userLookup.firstName) {
+      targetFirstName = userLookup.firstName;
+    }
+  } else if (isNumericId) {
     targetTgId = BigInt(clean);
   } else {
     let userLookup = d.users ? await d.users.findByUsername(clean) : null;
@@ -178,7 +199,7 @@ export async function assignStationAdmin(
     }
 
     if (!userLookup) {
-      throw badRequest(`User @${clean} was not found. Please ask them to open the Telegram bot and click Start first, or provide their numeric Telegram ID.`);
+      throw badRequest(`User @${clean} was not found. Please ask them to open the Telegram bot and click Start first, or provide their phone number / numeric Telegram ID.`);
     }
 
     targetTgId = userLookup.telegramUserId;

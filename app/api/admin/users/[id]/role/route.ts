@@ -4,11 +4,13 @@ import { authContext } from "@/lib/api/context";
 import { handle, json, readJson } from "@/lib/api/handler";
 import { requireRole } from "@/lib/auth/rbac";
 import { activityRepository } from "@/repositories/activityRepository";
+import { normalizePhone } from "@/lib/phone";
 import type { Role } from "@/generated/prisma/client";
 
 const updateRoleSchema = z.object({
   role: z.enum(["CUSTOMER", "OPERATIONS_ADMIN", "BRANCH_ADMIN", "SUPER_ADMIN", "VIEWER"]),
   stationId: z.string().max(100).nullable().optional(),
+  phone: z.string().max(40).nullable().optional(),
 });
 
 export const PATCH = handle(async (req, { params }: { params: Promise<{ id: string }> }) => {
@@ -50,15 +52,21 @@ export const PATCH = handle(async (req, { params }: { params: Promise<{ id: stri
     }
   }
 
+  const updateData: { role: Role; phone?: string | null } = { role: newRole };
+  if (data.phone !== undefined) {
+    updateData.phone = data.phone?.trim() ? normalizePhone(data.phone) : null;
+  }
+
   const updatedUser = await db.user.update({
     where: { id },
-    data: { role: newRole },
+    data: updateData,
     select: {
       id: true,
       telegramUserId: true,
       firstName: true,
       lastName: true,
       username: true,
+      phone: true,
       role: true,
       isActive: true,
     },

@@ -1,6 +1,7 @@
 import type {
   TelegramInlineKeyboardMarkup,
   TelegramReplyKeyboardMarkup,
+  TelegramReplyKeyboardRemove,
 } from "@/types/notifications";
 
 export class TelegramBlockedError extends Error {
@@ -21,7 +22,7 @@ export class TelegramRateLimitError extends Error {
 
 export interface SendMessageOptions {
   parseMode?: "HTML" | "MarkdownV2";
-  replyMarkup?: TelegramInlineKeyboardMarkup | TelegramReplyKeyboardMarkup;
+  replyMarkup?: TelegramInlineKeyboardMarkup | TelegramReplyKeyboardMarkup | TelegramReplyKeyboardRemove;
   disableWebPagePreview?: boolean;
 }
 

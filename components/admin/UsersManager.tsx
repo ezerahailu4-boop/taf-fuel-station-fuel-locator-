@@ -16,6 +16,7 @@ export interface BotUserItem {
   firstName: string;
   lastName: string | null;
   username: string | null;
+  phone?: string | null;
   languageCode: string | null;
   preferredLocale: string;
   role: string;
@@ -38,6 +39,7 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
   const [editingUser, setEditingUser] = useState<BotUserItem | null>(null);
   const [selectedRole, setSelectedRole] = useState<string>("CUSTOMER");
   const [selectedStationId, setSelectedStationId] = useState<string>("");
+  const [editPhone, setEditPhone] = useState<string>("");
   const [savingRole, setSavingRole] = useState(false);
   const [roleError, setRoleError] = useState<string | null>(null);
 
@@ -71,6 +73,7 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
     setEditingUser(u);
     setSelectedRole(u.role);
     setSelectedStationId("");
+    setEditPhone(u.phone || "");
     setRoleError(null);
   };
 
@@ -84,11 +87,12 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
     setSavingRole(true);
     setRoleError(null);
     try {
-      await apiFetch(`/api/admin/users/${editingUser.id}/role`, {
+      const res = await apiFetch<{ ok: boolean; user: any }>(`/api/admin/users/${editingUser.id}/role`, {
         method: "PATCH",
         body: {
           role: selectedRole,
           stationId: selectedRole === "BRANCH_ADMIN" ? selectedStationId : null,
+          phone: editPhone.trim() || null,
         },
       });
 
@@ -98,10 +102,12 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
           ? stations.find((s) => s.id === selectedStationId)?.branchName ?? null
           : null;
 
+      const updatedPhone = res?.user?.phone ?? (editPhone.trim() || null);
+
       setUsers((prev) =>
         prev.map((u) =>
           u.id === editingUser.id
-            ? { ...u, role: selectedRole, station: stationName }
+            ? { ...u, role: selectedRole, station: stationName, phone: updatedPhone }
             : u
         )
       );
@@ -195,7 +201,7 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
               <SearchIcon className="absolute left-3.5 top-3 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
-                placeholder="Search by name, @username, or Telegram ID..."
+                placeholder="Search by name, phone (+251/09...), @username, or Telegram ID..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-xl border bg-transparent pl-9 pr-4 py-2 text-xs outline-none focus:border-brand-orange transition"
@@ -264,8 +270,14 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
                         <div className="font-bold text-sm text-neutral-900 dark:text-neutral-100 truncate">
                           {fullName}
                         </div>
-                        <div className="text-xs text-neutral-400 truncate">
-                          {u.username ? `@${u.username}` : "No username"}
+                        <div className="text-xs text-neutral-400 truncate flex items-center gap-1.5 flex-wrap">
+                          <span>{u.username ? `@${u.username}` : "No username"}</span>
+                          {u.phone && (
+                            <>
+                              <span>•</span>
+                              <span className="font-mono text-amber-600 dark:text-amber-400 font-medium">📞 {u.phone}</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -334,8 +346,14 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
                             <div className="font-bold truncate text-neutral-900 dark:text-neutral-100">
                               {fullName}
                             </div>
-                            <div className="text-[11px] text-neutral-400">
-                              {u.username ? `@${u.username}` : "No username"}
+                            <div className="text-[11px] text-neutral-400 flex items-center gap-1.5 flex-wrap">
+                              <span>{u.username ? `@${u.username}` : "No username"}</span>
+                              {u.phone && (
+                                <>
+                                  <span>•</span>
+                                  <span className="font-mono text-amber-600 dark:text-amber-400 font-medium">📞 {u.phone}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -428,6 +446,24 @@ export function UsersManager({ stations = [] }: { stations?: StationItem[] }) {
                 <span>·</span>
                 <span>ID: {editingUser.telegramUserId}</span>
               </div>
+            </div>
+
+            {/* Phone Number Field */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold" style={{ color: "var(--text)" }}>
+                Phone Number (Linked to Telegram)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 0911223344 or +251911223344"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                className="w-full rounded-xl border p-2.5 text-xs bg-surface text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                style={{ borderColor: "var(--border)", background: "var(--bg)" }}
+              />
+              <p className="text-[11px] text-neutral-500">
+                Staff can use this phone number in Telegram to be automatically recognized.
+              </p>
             </div>
 
             {roleError && (

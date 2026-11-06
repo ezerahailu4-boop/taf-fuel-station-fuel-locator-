@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { authContext } from "@/lib/api/context";
 import { handle, json } from "@/lib/api/handler";
 import { requireRole } from "@/lib/auth/rbac";
+import { getPhoneSearchVariants } from "@/lib/phone";
 
 export const GET = handle(async (req) => {
   const { actor } = await authContext(req, { write: false });
@@ -21,13 +22,15 @@ export const GET = handle(async (req) => {
   }
 
   if (search) {
+    const phoneVariants = getPhoneSearchVariants(search);
     where.OR = [
       { firstName: { contains: search, mode: "insensitive" } },
       { lastName: { contains: search, mode: "insensitive" } },
       { username: { contains: search, mode: "insensitive" } },
+      ...phoneVariants.map((v) => ({ phone: { contains: v, mode: "insensitive" } })),
     ];
     // If search is numeric, check telegramUserId
-    if (/^\d+$/.test(search)) {
+    if (/^\d{1,16}$/.test(search)) {
       where.OR.push({ telegramUserId: BigInt(search) });
     }
   }
@@ -45,6 +48,7 @@ export const GET = handle(async (req) => {
         firstName: true,
         lastName: true,
         username: true,
+        phone: true,
         languageCode: true,
         preferredLocale: true,
         role: true,
@@ -78,6 +82,7 @@ export const GET = handle(async (req) => {
       firstName: u.firstName,
       lastName: u.lastName,
       username: u.username,
+      phone: u.phone ?? null,
       languageCode: u.languageCode,
       preferredLocale: u.preferredLocale,
       role: u.role,

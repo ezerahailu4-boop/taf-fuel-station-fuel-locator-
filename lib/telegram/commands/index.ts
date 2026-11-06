@@ -7,6 +7,7 @@ import { handleNearestCommand, handleLocationReceived } from "./nearest";
 import { handleNotificationsCommand } from "./notifications";
 import { handleHelpCommand } from "./help";
 import { handleAdminCommand } from "./admin";
+import { handleContactReceived } from "./contact";
 
 export async function dispatchTelegramUpdate(
   update: TelegramUpdate,
@@ -23,6 +24,29 @@ export async function dispatchTelegramUpdate(
         await handleNearestCommand(cq.message, botToken, appUrl);
       } else if (data === "cmd_stations") {
         await handleStationsCommand(cq.message, botToken, appUrl);
+      } else if (data === "cmd_link_phone") {
+        const isAmharic = cq.from.language_code?.toLowerCase().startsWith("am");
+        await sendTelegramMessage(
+          botToken,
+          cq.message.chat.id,
+          isAmharic
+            ? "📱 **ስልክ ቁጥርዎን ያገናኙ**\n\nከዚህ በታች ያለውን ቁልፍ በመጫን የቴሌግራም መለያዎ የተገናኘበትን ስልክ ቁጥር ያጋሩ፦"
+            : "📱 **Link Your Phone Number**\n\nTap the button below to share the phone number linked to your Telegram account:",
+          {
+            replyMarkup: {
+              keyboard: [
+                [
+                  {
+                    text: isAmharic ? "📱 ስልክ ቁጥር ያጋሩ (Share Phone)" : "📱 Share Phone Number",
+                    request_contact: true,
+                  },
+                ],
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          }
+        );
       }
     }
 
@@ -37,6 +61,12 @@ export async function dispatchTelegramUpdate(
   // Handle location messages
   if (msg.location) {
     await handleLocationReceived(msg, msg.location, botToken, appUrl);
+    return;
+  }
+
+  // Handle contact messages (phone number sharing)
+  if (msg.contact) {
+    await handleContactReceived(msg, msg.contact, botToken, appUrl);
     return;
   }
 
@@ -86,6 +116,32 @@ export async function dispatchTelegramUpdate(
     case "/admin":
       await handleAdminCommand(msg, botToken, appUrl);
       break;
+    case "/phone":
+    case "/link": {
+      const isAmharic = msg.from?.language_code?.toLowerCase().startsWith("am");
+      await sendTelegramMessage(
+        botToken,
+        msg.chat.id,
+        isAmharic
+          ? "📱 **ስልክ ቁጥርዎን ያገናኙ**\n\nከዚህ በታች ያለውን ቁልፍ በመጫን የቴሌግራም መለያዎ የተገናኘበትን ስልክ ቁጥር ያጋሩ፦"
+          : "📱 **Link Your Phone Number**\n\nTap the button below to share the phone number linked to your Telegram account:",
+        {
+          replyMarkup: {
+            keyboard: [
+              [
+                {
+                  text: isAmharic ? "📱 ስልክ ቁጥር ያጋሩ (Share Phone)" : "📱 Share Phone Number",
+                  request_contact: true,
+                },
+              ],
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true,
+          },
+        }
+      );
+      break;
+    }
     case "/help":
       await handleHelpCommand(msg, botToken, appUrl);
       break;

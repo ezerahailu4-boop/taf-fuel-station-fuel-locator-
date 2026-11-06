@@ -13,6 +13,7 @@ export async function handleStartCommand(
 
   let isSuperAdminUser = false;
   let isOperationsAdmin = false;
+  let isBranchAdmin = false;
   let totalUsers = 0;
 
   if (msg.from?.id) {
@@ -27,6 +28,7 @@ export async function handleStartCommand(
 
       totalUsers = reg.totalUsers;
       isOperationsAdmin = reg.user.role === "OPERATIONS_ADMIN";
+      isBranchAdmin = reg.user.role === "BRANCH_ADMIN";
       isSuperAdminUser =
         reg.user.role === "SUPER_ADMIN" ||
         msg.from.id.toString() === (process.env.SUPER_ADMIN_TELEGRAM_ID || "2074368152");
@@ -92,7 +94,7 @@ export async function handleStartCommand(
             ],
           ]
         : []),
-      ...(msg.text?.toLowerCase().includes("branch")
+      ...(isBranchAdmin || msg.text?.toLowerCase().includes("branch")
         ? [
             [
               {
@@ -132,6 +134,10 @@ export async function handleStartCommand(
         {
           text: isAmharic ? "🔔 ማሳወቂያዎቼ (My Alerts)" : "🔔 Manage Alerts",
           web_app: { url: `${appUrl}/alerts` },
+        },
+        {
+          text: isAmharic ? "📱 ስልክ ቁጥር ያገናኙ" : "📱 Link Phone",
+          callback_data: "cmd_link_phone",
         },
       ],
     ],

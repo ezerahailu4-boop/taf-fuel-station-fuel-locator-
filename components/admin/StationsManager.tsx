@@ -7,6 +7,7 @@ import type { StationStatus } from "@/lib/fuel/enums";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { isPhoneNumber } from "@/lib/phone";
 import { 
   GasStationIcon, 
   SearchIcon, 
@@ -48,7 +49,7 @@ export function StationsManager({
   const [assigningStation, setAssigningStation] = useState<StationItem | null>(null);
   const [adminTgId, setAdminTgId] = useState("");
   const [userSuggestions, setUserSuggestions] = useState<
-    Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null }>
+    Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null; phone?: string | null }>
   >([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,7 +69,7 @@ export function StationsManager({
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         const res = await apiFetch<{
-          users: Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null }>;
+          users: Array<{ id: string; telegramUserId: string; firstName: string; lastName: string | null; username: string | null; phone?: string | null }>;
         }>(`/api/admin/users?limit=5&search=${encodeURIComponent(query)}`);
         setUserSuggestions(res.users || []);
       } catch {
@@ -79,8 +80,10 @@ export function StationsManager({
     }, 250);
   }
 
-  function selectSuggestedUser(user: { telegramUserId: string; username: string | null; firstName: string; lastName: string | null }) {
-    if (user.username) {
+  function selectSuggestedUser(user: { telegramUserId: string; username: string | null; firstName: string; lastName: string | null; phone?: string | null }) {
+    if (user.phone) {
+      setAdminTgId(user.phone);
+    } else if (user.username) {
       setAdminTgId(`@${user.username}`);
     } else {
       setAdminTgId(user.telegramUserId);
@@ -231,9 +234,12 @@ export function StationsManager({
     setMessage(null);
     try {
       const rawInput = adminTgId.trim();
-      const isPureDigits = /^\d{1,15}$/.test(rawInput) && !rawInput.startsWith("@");
+      const isPhone = isPhoneNumber(rawInput);
+      const isPureDigits = !isPhone && /^\d{1,15}$/.test(rawInput) && !rawInput.startsWith("@");
       const cleanUser = rawInput.replace(/^@+/, "");
-      const payload = isPureDigits
+      const payload = isPhone
+        ? { phone: rawInput, identifier: rawInput }
+        : isPureDigits
         ? { telegramUserId: rawInput }
         : { username: cleanUser, identifier: rawInput };
 
@@ -637,15 +643,15 @@ export function StationsManager({
             <CardContent className="pt-2">
               <form onSubmit={handleAssignAdmin} className="space-y-4">
                 <p className="text-xs text-neutral-500 leading-relaxed">
-                  Enter the Telegram <strong className="text-neutral-800 dark:text-neutral-200">@username</strong> (e.g. <span className="font-mono text-amber-600">@dawit</span>) or numeric Telegram ID of the branch manager. They can immediately manage fuel queues and inventory at <code className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[11px]">/branch</code>.
+                  Enter the manager&apos;s <strong className="text-neutral-800 dark:text-neutral-200">Phone Number</strong> (e.g. <span className="font-mono text-amber-600">0911223344</span>), Telegram <strong className="text-neutral-800 dark:text-neutral-200">@username</strong>, or numeric Telegram ID. They can immediately manage fuel queues and inventory at <code className="px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 font-mono text-[11px]">/branch</code>.
                 </p>
                 <div className="block space-y-1 relative">
-                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Telegram Username or ID *</span>
+                  <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">Telegram Username, Phone Number, or ID *</span>
                   <div className="relative">
                     <input
                       type="text"
                       required
-                      placeholder="e.g. @dawit_taf or 2074368152"
+                      placeholder="e.g. 0911223344, @dawit_taf, or 737068696827"
                       value={adminTgId}
                       onChange={(e) => handleTgIdChange(e.target.value)}
                       className={inputClass}
@@ -677,8 +683,9 @@ export function StationsManager({
                               <div className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
                                 {u.firstName} {u.lastName || ""}
                               </div>
-                              <div className="text-[11px] text-neutral-400 font-mono">
-                                ID: {u.telegramUserId}
+                              <div className="text-[11px] text-neutral-400 font-mono flex items-center gap-2">
+                                <span>ID: {u.telegramUserId}</span>
+                                {u.phone && <span className="text-amber-600 dark:text-amber-400 font-sans">📞 {u.phone}</span>}
                               </div>
                             </div>
                             {u.username ? (
